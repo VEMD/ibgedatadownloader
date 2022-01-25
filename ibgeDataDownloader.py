@@ -21,12 +21,16 @@
  *                                                                         *
  ***************************************************************************/
 """
-from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication, pyqtSignal, Qt
+from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication, pyqtSignal, Qt, QModelIndex
 from qgis.PyQt.QtGui import QIcon, QStandardItemModel, QStandardItem
-from qgis.PyQt.QtWidgets import QAction, QFileDialog, QProgressBar, QProgressDialog, QPushButton, QToolButton
+from qgis.PyQt.QtWidgets import (
+                                 QAction, QFileDialog, QProgressBar,
+                                 QProgressDialog, QPushButton, QToolButton,
+                                 QDialogButtonBox, QHeaderView
+                                )
 from qgis.core import QgsTask, Qgis, QgsProject, QgsApplication
 from html.parser import HTMLParser
-import os, unicodedata, urllib, zipfile, http
+import os, unicodedata, urllib, zipfile, http, http.client, re
 # Initialize Qt resources from file resources.py
 from .resources import *
 # Import the code for the dialog
@@ -39,39 +43,91 @@ class MyHTMLParser(HTMLParser):
 
     def __init__(self):
         """Constructor."""
+
         # Mother class constructor HTMLParser (subclass)
         super(MyHTMLParser, self).__init__()
-        
+
         # Attribute that receive parent tree
         self.__parent__ = None
         # Attribute that receive childs tree
         self.__children__ = []
+        # Attribute that receives child information
+        self.resetChild()
+        # Attribute that receives tag <tr> in and out information
+        self.__trElement__ = False
 
     def handle_starttag(self, tag, attrs):
-        """Overrides to feed __parent__ and __children__ attributes"""
+        """Overrides to feed __parent__ and __child__"""
+
+        if tag == 'tr':
+            self.__trElement__ = True
+            #print(tag, self.__trElement__)
+
         if tag == 'a':
             for attr in attrs:
                 if attr[1].startswith('/'):
                     # Set parent
                     self.__parent__ = attr[1]
                 if not any(attr[1].startswith(item) for item in ('?', '/')):
-                    # Add child
-                    self.__children__.append(attr[1])
+                    # Set child name
+                    self.__child__ = [attr[1]]
+                    #print('adicionou handle_starttag')
+            #print(tag, self.__child__)
+
+    def handle_endtag(self, tag):
+        """Overrides to feed __children__ and reset __child__"""
+
+        if tag == 'tr':
+            self.__trElement__ = False
+            # If child is valid, append to __children__
+            if self.__child__ != []:
+                self.__children__.append(self.__child__)
+            # Reset __child__
+            self.resetChild()
+            #print(tag, self.__trElement__)
+
+    def handle_data(self, data):
+        """Overrides to feed information about __child__"""
+
+        # Remove white spaces at start / end of the string
+        data = data.lstrip().rstrip()
+        # Set child last modified date
+        match = re.match(r'(\d+-\d+-\d+ \d+:\d+)', data)
+        if match and self.__child__ != []:
+            self.__child__.append(data)
+            #print(self.__child__)
+        # Set child file size using regular expression
+        match = re.match(r'(\d+[A-Za-z])', data) # NNX
+        if not match:
+            match = re.match(r'(\d+\.?\d+[A-Za-z])', data) # N.NX
+        if match and self.__child__ != []:
+            # Adds a space between value and unit and a B as sufix
+            self.__child__.append('{} {}B'.format(data[:-1], data[-1]))
+            #print(self.__child__)
 
     def getChildren(self):
         """Returns childs"""
+
         return self.__children__ if self.__children__ else None
 
     def getParent(self):
         """Returns parent"""
+
         return self.__parent__
+
+    def resetChild(self):
+        """Resets child attribute"""
+
+        self.__child__ = []
 
     def resetChildren(self):
         """Resets children attribute"""
+
         self.__children__ = []
-    
+
     def resetParent(self):
         """Resets parent attribute"""
+
         self.__parent__ = None
 
 
@@ -82,6 +138,7 @@ class MyProgressDialog(QProgressDialog):
 
     def __init__(self):
         """Constructor."""
+
         # Mother class constructor QProgressDialog (subclass)
         super(MyProgressDialog, self).__init__()
 
@@ -90,10 +147,12 @@ class MyProgressDialog(QProgressDialog):
 
     def setClose(self, var):
         """Defines if the dialog can be closed"""
+
         self.__close__ = var
 
     def closeEvent(self, event):
         """Overrides closeEvent (closing dialog)"""
+
         if self.__close__:
             super(MyProgressDialog, self).closeEvent(event)
         else:
@@ -106,10 +165,12 @@ class WorkerDownloadManager(QgsTask):
     ###########################################
 
     # Signals emitted
-    textProgress = pyqtSignal(str) # text for the progress dialog
+    textProgress = pyqtSignal(str) # text for progress dialog
     processResult = pyqtSignal(list) # process result
-    def __init__(self, iface, desc, url, dirPad, outFile, barMax):
+
+    def __init__(self, iface, desc, url, dirPad, outFile, barMax, listUnzipOptions):
         """Constructor."""
+
         # Mother class constructor QgsTask (subclass)
         super(WorkerDownloadManager, self).__init__(desc, flags=QgsTask.CanCancel)
         
@@ -122,14 +183,16 @@ class WorkerDownloadManager(QgsTask):
         self.dirPad = dirPad
         self.pluginIcon = QIcon(':/plugins/ibgedatadownloader/icon.png')
         self.barMax = barMax
+        self.unzip = listUnzipOptions[1] if listUnzipOptions[0] else False
 
     def finished(self, result):
         """This function is called automatically when the task is completed and is
         called from the main thread so it is safe to interact with the GUI etc here"""
+
         if result is False:
-            self.msgBar.pushMessage(u'Error',u'Oops, something went wrong! Please, contact the developer by e-mail.', Qgis.Critical, duration=0)
+            self.msgBar.pushMessage(self.tr(u'Error'),self.tr(u'Oops, something went wrong! Please, contact the developer by e-mail.'), Qgis.Critical, duration=0)
         else:
-            self.msgBar.pushMessage(u'Success',u'Download completed and files extracted.', Qgis.Success, duration=0)
+            self.msgBar.pushMessage(self.tr(u'Success'),self.tr(u'Process completed.'), Qgis.Success, duration=0)
 
     def run(self):
         """Principal method that is automatically called when the task runs."""
@@ -138,11 +201,11 @@ class WorkerDownloadManager(QgsTask):
         file_size_dl = 0
         self.setProgress(file_size_dl)
 
-        fileName = self.outFile.split('\\')[-1]
+        fileName = os.path.basename(self.outFile)
         try:
             u = urllib.request.urlopen(self.url)
         except:
-            self.processResult.emit([u'Failed to open url {}.'.format(self.url), Qgis.Critical])
+            self.processResult.emit([self.tr(u'Failed to open url {}.').format(self.url), Qgis.Critical])
             return False
         
         # Creates directory for product year, if it doesn't exists
@@ -151,7 +214,7 @@ class WorkerDownloadManager(QgsTask):
         
         # Open file
         f = open(self.outFile, 'wb')
-        msg = 'Downloading {}...'.format(fileName)
+        msg = self.tr('Downloading {}...').format(fileName)
         self.textProgress.emit(msg)
         #print "Downloading: %s Bytes: %s" % (self.outFile, file_size)
 
@@ -170,12 +233,13 @@ class WorkerDownloadManager(QgsTask):
         f.close()
 
         # Extracting downloaded files
-        msg = u'Extracting files from {}...'.format(fileName)
-        self.textProgress.emit(msg)
-        with zipfile.ZipFile(os.path.join(self.dirPad, fileName), 'r') as zip_ref:
-            zip_ref.extractall(self.dirPad)
+        if self.unzip:
+            msg = self.tr(u'Extracting files from {}...').format(fileName)
+            self.textProgress.emit(msg)
+            with zipfile.ZipFile(os.path.join(self.dirPad, fileName), 'r') as zip_ref:
+                zip_ref.extractall(self.dirPad)
 
-        self.processResult.emit([u'Download completed and files extracted.', Qgis.Success])
+        self.processResult.emit([self.tr(u'Process completed. Check your file(s) at <a href="{saida}">{saida}</a>.').format(saida=self.dirPad), Qgis.Success])
         return True
 
 
@@ -226,10 +290,17 @@ class IbgeDataDownloader:
                         self.qgisProgressButton = i
                         break
 
+        # Avoid headers limit error
+        http.client._MAXHEADERS = 10000
+
         # Saving references
         self.msgBar = self.iface.messageBar()
         self.taskManager = QgsApplication.taskManager()
         self.htmlParser = MyHTMLParser()
+        self.baseUrl = 'https://geoftp.ibge.gov.br/'
+        self.itemsExpanded = []
+        self.selectedProductUrl = ''
+        self.dirSaida = ''
 
     # noinspection PyMethodMayBeStatic
     def tr(self, message):
@@ -245,7 +316,6 @@ class IbgeDataDownloader:
         """
         # noinspection PyTypeChecker,PyArgumentList,PyCallByClass
         return QCoreApplication.translate('IbgeDataDownloader', message)
-
 
     def add_action(
         self,
@@ -347,8 +417,8 @@ class IbgeDataDownloader:
         """Creates and returns the progress dialog and bar"""
 
         dialog = MyProgressDialog()
-        dialog.setWindowTitle(u'Processing. Please, wait...')
-        dialog.setLabelText(u'Downloading data')
+        dialog.setWindowTitle(self.tr(u'Processing. Please, wait...'))
+        dialog.setLabelText(self.tr(u'Downloading data'))
         dialog.setWindowIcon(self.pluginIcon)
         progressBar = QProgressBar(dialog)
         progressBar.setTextVisible(True)
@@ -358,11 +428,13 @@ class IbgeDataDownloader:
         dialog.setMinimumWidth(300)
         dialog.setModal(True)
         dialog.setWindowFlag(Qt.WindowCloseButtonHint, False)
-        dialog.canceled.connect(self.canceledProgressDialog)
+        #dialog.canceled.connect(self.canceledProgressDialog)
+        '''
         for i in dialog.children():
             if type(i) == QPushButton:
                 i.setEnabled(False)
                 i.setVisible(False)
+        '''
         return dialog, progressBar
 
     def canceledProgressDialog(self):
@@ -381,14 +453,19 @@ class IbgeDataDownloader:
         """Defines the label of the progress dialog."""
 
         self.dlgBar.setLabelText(txt)
-        if txt.startswith('Extracting'):
+        if txt.startswith(self.tr('Extracting')):
             self.progressBar.setMaximum(0)
 
-    def dlgDirSaida(self):
+    def dlgDirSaida(self, checked):
         """Opens dialog to indicate the output directory."""
 
         self.dirSaida = QFileDialog.getExistingDirectory(QFileDialog(), self.tr(u'Output directory'), '')
         self.dlg.lineEdit_Saida.setText(self.dirSaida)
+
+        if self.dirSaida != '':
+            self._checkOkButton()
+        else:
+            self.dlg.button_box.button(QDialogButtonBox.Ok).setEnabled(False)
 
     def threadResult(self, result):
         """Keeps reference of the worker result"""
@@ -403,9 +480,9 @@ class IbgeDataDownloader:
         self.dlgBar.close()
 
         if self.pluginResult[1] == Qgis.Critical:
-            msgType = 'Error'
+            msgType = self.tr('Error')
         else:
-            msgType = 'Success'
+            msgType = self.tr('Success')
 
         self.msgBar.clearWidgets()
         self.msgBar.pushMessage(msgType, self.pluginResult[0], self.pluginResult[1], duration=0)
@@ -441,101 +518,104 @@ class IbgeDataDownloader:
             objeto.addItem(item)
 
     def treeViewClicked(self, modelIndex):
-        print(modelIndex.row(), modelIndex.column(), modelIndex.data(), modelIndex.parent().data())
+        """Slot of clicked signal that constructs the items URL and enables the OK button"""
 
-    def _addTreeViewParentChildrenNodes(self, parentName, childName=None):
+        parents = [modelIndex.data()] if modelIndex.data() not in self.baseUrl else []
+        parent = modelIndex.parent()
+        #print(modelIndex.parent(), modelIndex.parent().data())
+        while parent.data() != None and parent.data() not in self.baseUrl:
+            parents.insert(0, parent.data())
+            parent = parent.parent()
+        
+        self.selectedProductUrl = '{base}{subPath}'.format(base=self.baseUrl, subPath='/'.join(parents))
+        #print(self.selectedProductUrl)
+
+        # Check if the unzip option can be enabled
+        if any(ext in self.selectedProductUrl for ext in ('.zip', '.rar')):
+            self.dlg.checkBox_Unzip.setEnabled(True)
+        else:
+            self.dlg.checkBox_Unzip.setEnabled(False)
+
+        # Check if OK button can be enabled
+        self._checkOkButton()
+
+    def treeViewExpanded(self, modelIndex):
+        """Slot of expanded signal that adds item's children to the tree"""
+
+        if modelIndex not in self.itemsExpanded:
+            # Deletes first empty child
+            model = modelIndex.model()
+            node = model.itemFromIndex(modelIndex)
+            child = node.child(0)
+            if child and child.text() == '':
+                node.removeRow(0)
+
+            # Gets item's parents
+            parents = [modelIndex.data()] if modelIndex.data() not in self.baseUrl else []
+            parent = modelIndex.parent()
+            #print(modelIndex.parent(), modelIndex.parent().data())
+            while parent.data() != None and parent.data() not in self.baseUrl:
+                parents.insert(0, parent.data())
+                parent = parent.parent()
+
+            # Adds item's children
+            #print('/'.join(parents))
+            url = '{base}{subPath}/'.format(base=self.baseUrl, subPath='/'.join(parents))
+            #print(url)
+            self.htmlParser.resetParent()
+            self.htmlParser.resetChildren()
+            self.htmlParser.resetChild()
+            self.htmlParser.feed(http.client.parse_headers(urllib.request.urlopen(url)).as_string())
+            children = self.htmlParser.getChildren()
+            
+            # Add children to the tree
+            #print(children)
+            for child in children:
+                #print('adicionando {} ao item {}'.format(child.replace('/', ''), modelIndex.data()))
+                child[0] = child[0].replace('/', '')
+                self._addTreeViewParentChildNode(modelIndex, child)
+
+            # Add the item to expanded list
+            self.itemsExpanded.append(modelIndex)
+
+    def _addTreeViewParentChildNode(self, parent, child=None):
         """Adds parent and/or children nodes to the QTreeView"""
-        print(parentName, childName)
 
         model = self.dlg.treeView.model()
         if not model:
-            model = QStandardItemModel()
-            model.setHorizontalHeaderLabels(['Products tree'])
+            model = QStandardItemModel(0, 3)
+            model.setHorizontalHeaderLabels([self.tr('Products Tree'), self.tr('File size'), self.tr('Last modified')])
 
-        if not childName:
-            parentNode = QStandardItem(parentName)
-            model.appendRow(parentNode)
+        if not child:
+            parentNode = QStandardItem(parent)
+            parentNode.appendRow([QStandardItem(''), QStandardItem(''), QStandardItem('')])
+            model.appendRow([parentNode, QStandardItem(''), QStandardItem('')])
         else:
-            topNode = model.item(0)
-            childNode = QStandardItem(childName)
-            parentNode = None
-            parentNodes = model.findItems(parentName)
-            if len(parentNodes) == 0:
-                print(len(parentNodes))
-                print(topNode.hasChildren())
-                a = True
-                while a:
-                    c = 1
-                    childrenCount = topNode.rowCount()
-                    print(childrenCount)
-                    pNode = None
-                    for i in range(childrenCount):
-                        pNode = topNode.child(i)
-                        print(pNode.text())
-                        if pNode.text() == parentName:
-                            parentNode = pNode
-                            a = False
-                            break
-                    if not parentNode:
-                        topNode = pNode
-                        topNode.text()
-                    c += 1
-                    if c == 10:
-                        a = False
-            else:
-                for pNode in parentNodes:
-                    print(pNode.text(), parentName)
-                    if pNode.text() == parentName:
-                        parentNode = pNode
-                        break
-            parentNode.appendRow(childNode)
+            if type(parent) == QModelIndex:
+                #print(u'é QModelIndex', child)
+                parentNode = model.itemFromIndex(parent)
+                childNode = QStandardItem(child[0])
+            if '.' not in childNode.text():
+                if not childNode.hasChildren():
+                    childNode.appendRow(QStandardItem(''))
+            #print(child)
+            try:
+                childNodeSize = QStandardItem(child[2])
+            except IndexError:
+                childNodeSize = QStandardItem('')
+            try:
+                childNodeDate = QStandardItem(child[1])
+            except IndexError:
+                childNodeDate = QStandardItem('')
+            parentNode.appendRow([childNode, childNodeSize, childNodeDate])
+            #print(childNode.text(), childNode.row(), childNode.column())
+            #print(childNodeSize.text(), childNodeSize.row(), childNodeSize.column())
+            #print(childNodeDate.text(), childNodeDate.row(), childNodeDate.column())
 
-        '''
-        if not childName:
-            parentNode = QStandardItem(parentName)
-            model.appendRow(parentNode)
-        else:
-            topNode = model.item(0)
-            childNode = QStandardItem(childName)
-            parentNode = None
-            parentNodes = model.findItems(parentName)
-            if len(parentNodes) == 0:
-                print(len(parentNodes))
-                print(topNode.hasChildren())
-                if topNode.hasChildren():
-                    childrenCount = topNode.rowCount()
-                    print(childrenCount)
-                    for i in range(childrenCount):
-                        pNode = topNode.child(i)
-                        print(pNode.text())
-                        if pNode.text() == parentName:
-                            parentNode = pNode
-                            break
-            else:
-                for pNode in parentNodes:
-                    print(pNode.text(), parentName)
-                    if pNode.text() == parentName:
-                        parentNode = pNode
-                        break
-            parentNode.appendRow(childNode)
-        '''
-        '''
-        for child in childrenNamesList:
-            if type(child) == str:
-                model.appendRow(QStandardItem(child))
-            else:
-                print(child)
-                parentName = child[0]
-                parentNode = QStandardItem(parentName)
-                parentNodes = model.findItems(parentName)
-                if len(parentNodes) > 0:
-                    for pNode in parentNodes:
-                        print(pNode.text(), parentName)
-                        if pNode.text() == parentName:
-                            parentNode = pNode
-                            break
-                parentNode.appendRow(QStandardItem(child[1]))
-        '''
+        # Adjusting headers size
+        header = self.dlg.treeView.header()
+        header.setSectionResizeMode(QHeaderView.ResizeToContents)
+
         self.dlg.treeView.setModel(model)
 
     def _configDialogs(self):
@@ -547,71 +627,33 @@ class IbgeDataDownloader:
         # Signals
         self.dlg.pushButton_Dir.clicked.connect(self.dlgDirSaida)
         self.dlg.treeView.clicked.connect(self.treeViewClicked)
+        self.dlg.treeView.expanded.connect(self.treeViewExpanded)
 
-        # Populate combo for product selection
-        r = [u'Malhas Municipais']
-        self.populateComboListBox(self.dlg.comboBox_Produto, r)
-
-        # Populate combo for year selection
-        url = 'https://geoftp.ibge.gov.br/organizacao_do_territorio/malhas_territoriais/malhas_municipais/'
+        # Populate tree for product selection
+        #url = '{}organizacao_do_territorio/'.format(self.baseUrl)
+        url = self.baseUrl
         self.htmlParser.reset()
         self.htmlParser.feed(http.client.parse_headers(urllib.request.urlopen(url)).as_string())
-        parent = os.path.basename(os.path.normpath(url)).replace('_', ' ').title()
-        # Add top parent to the tree
-        self._addTreeViewParentChildrenNodes(parent)
-        children = self.htmlParser.getChildren()
-        r = []
-        listParentChild = []
-        nextUrls = []
-        # Add all children and others to the tree
-        #print(children)
-        for child in children:
-            self._addTreeViewParentChildrenNodes(parent.replace('/', ''), child.replace('/', ''))
-            listParentChild.append([parent.replace('/', ''), child.replace('/', '')])
-            #print([parent, child])
-            nextUrls = []
-            if child.endswith('/'):
-                urlChild = url + child
-                nextUrls.append(urlChild)
-                while nextUrls:
-                    for u in nextUrls:
-                        #print(u)
-                        self.htmlParser.resetParent()
-                        self.htmlParser.resetChildren()
-                        self.htmlParser.feed(http.client.parse_headers(urllib.request.urlopen(u)).as_string())
-                        parent = os.path.basename(os.path.normpath(u))
-                        if '.' in parent:
-                            parent = os.path.basename(os.path.dirname(os.path.normpath(u)))
-                        #parent = self.htmlParser.getParent()
-                        childrenChildren = self.htmlParser.getChildren()
-                        if childrenChildren:
-                            #print(childrenChildren)
-                            for childrenChild in childrenChildren:
-                                self._addTreeViewParentChildrenNodes(parent.replace('/', ''), childrenChild.replace('/', ''))
-                                listParentChild.append([parent.replace('/', ''), childrenChild.replace('/', '')])
-                                if childrenChild.endswith('/'):
-                                    urlChildChild = u + childrenChild
-                                    nextUrls.append(urlChildChild)
-                        nextUrls.remove(u)
-                    parent = os.path.basename(os.path.normpath(url)).replace('_', ' ').title()
-
-        #for i in listParentChild:
-        #    self._addTreeViewParentChildrenNodes(i[0], i[1])
-
-
-        self.populateComboListBox(self.dlg.comboBox_Ano, r)
         
+        # Add top parent to the tree
+        parent = os.path.basename(os.path.normpath(url))
+        self._addTreeViewParentChildNode(parent)
 
-        # Populate combo for Federal Unity selection
-        r = [u'BR - Brasil', u'AC - Acre', u'AL - Alagoas', u'AM - Amazonas', u'AP - Amapá', u'BA - Bahia', u'CE - Ceará', u'DF - Distrito Federal', u'ES - Espírito Santo',
-             u'GO - Goiás', u'MA - Maranhão', u'MG - Minas Gerais', u'MS - Mato Grosso do Sul', u'MT - Mato Grosso', u'PA - Pará', u'PB - Paraíba', u'PE - Pernambuco',
-             u'PI - Piauí', u'PR - Paraná', u'RJ - Rio de Janeiro', u'RN - Rio Grande do Norte', u'RR - Roraima', u'RS - Rio Grande do Sul', u'SC - Santa Catarina',
-             u'SE - Sergipe', u'SP - São Paulo', u'TO - Tocantins', u'RO – Rondônia']
-        self.populateComboListBox(self.dlg.comboBox_Unidade, r)
+        # Disable OK button
+        self.dlg.button_box.button(QDialogButtonBox.Ok).setEnabled(False)
+        # Disable options
+        self.dlg.checkBox_Unzip.setEnabled(False)
 
-        # Populate combo for type selection
-        r = [u'Todos', u'Unidades da Federação', u'Municípios', u'Microrregiões', u'Mesorregiões']
-        self.populateComboListBox(self.dlg.comboBox_Tipo, r)
+    def _checkOkButton(self):
+        """Enables or disables OK button"""
+
+        if self.selectedProductUrl[-4] != '':
+            if self.selectedProductUrl[-4] == '.' and self.dirSaida != '':
+                # Enable OK button
+                self.dlg.button_box.button(QDialogButtonBox.Ok).setEnabled(True)
+            else:
+                # Disable OK button
+                self.dlg.button_box.button(QDialogButtonBox.Ok).setEnabled(False)
 
     def _getFileSize(self, url):
         """Returns file size of the url"""
@@ -624,36 +666,30 @@ class IbgeDataDownloader:
     def _execute(self):
         """Does the real work:
            -Download file
-           -Extract file
-           -Add selected statistical data
-           -Add layer to legend panel"""
+           -Extract file, if necessary
+           -Add selected statistical data *** NOT IMPLEMENTED
+           -Add layer to legend panel *** NOT IMPLEMENTED"""
 
-        # Getting selected variables
-        ano = self.dlg.comboBox_Ano.currentText()
-        uf = self.dlg.comboBox_Unidade.currentText()[:2]
-        fileName = uf.lower() + '_' + self._padronizaTexto(self.dlg.comboBox_Tipo.currentText()) + '.zip'
-        if ano == '2020':
-            fileName = '{uf}_{product}_{yyyy}.zip'.format(uf=uf, product=self._padronizaTexto(self.dlg.comboBox_Tipo.currentText()).capitalize(), yyyy=ano)
-        if self.dlg.comboBox_Tipo.currentText() == 'Todos':
-            fileName = uf + '.zip'
-        
-        tp = 'UFs'
-        if uf == 'BR':
-            tp = 'Brasil'
-        url = 'https://geoftp.ibge.gov.br/organizacao_do_territorio/malhas_territoriais/malhas_municipais/municipio_{yyyy}/{type}/{uf}/{file}'.format(yyyy=ano, type=tp, uf=uf, file=fileName)
-
-        dirPad = os.path.join(self.dirSaida, ano)
-        outFile = os.path.join(dirPad, fileName)
-        self.barMax = self._getFileSize(url)
+        # Preparing product download
+        fileName = os.path.basename(self.selectedProductUrl)
+        outFile = os.path.join(self.dirSaida, fileName)
+        self.barMax = self._getFileSize(self.selectedProductUrl)
         #print(self.barMax)
-
         self.dlgBar, self.progressBar = self._progressDialog(0)
         self.dlgBar.show()
-        self.msgBar.pushMessage('Processing',u'Working on selected data...', Qgis.Info, duration=0)
+        self.msgBar.pushMessage(self.tr('Processing'),self.tr(u'Working on selected data...'), Qgis.Info, duration=0)
         
-        # Instantiate the background worker
-        self.taskDesc = u'Processing selected data.'
-        self.threadTask = WorkerDownloadManager(self.iface, self.taskDesc, url, dirPad, outFile, self.barMax)
+        # Instantiate the background worker and connects slots to signals
+        self.taskDesc = self.tr(u'Processing selected data.')
+        self.threadTask = WorkerDownloadManager(
+                                                self.iface,
+                                                self.taskDesc,
+                                                self.selectedProductUrl,
+                                                self.dirSaida,
+                                                outFile,
+                                                self.barMax,
+                                                [self.dlg.checkBox_Unzip.isEnabled(), self.dlg.checkBox_Unzip.isChecked()]
+                                                )
         self.threadTask.begun.connect(lambda: self.setProgressText(self.taskDesc))
         self.threadTask.progressChanged.connect(self.setProgressValue)
         self.threadTask.textProgress.connect(self.setProgressText)
