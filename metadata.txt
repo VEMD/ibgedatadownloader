@@ -6,7 +6,7 @@
 name=Download data from IBGE
 qgisMinimumVersion=3.16
 description=This plugin downloads data from IBGE
-version=0.01
+version=0.02
 author= Vinicius Etchebeur Medeiros Dória
 email=vinicius_etchebeur@hotmail.com
 

@@ -26,11 +26,12 @@ from qgis.PyQt.QtGui import QIcon, QStandardItemModel, QStandardItem
 from qgis.PyQt.QtWidgets import (
                                  QAction, QFileDialog, QProgressBar,
                                  QProgressDialog, QPushButton, QToolButton,
-                                 QDialogButtonBox, QHeaderView
+                                 QDialogButtonBox, QHeaderView, QAbstractItemView,
+                                 QTreeWidgetItemIterator
                                 )
 from qgis.core import QgsTask, Qgis, QgsProject, QgsApplication
 from html.parser import HTMLParser
-import os, unicodedata, urllib, zipfile, http, http.client, re
+import os, unicodedata, urllib, zipfile, tarfile, http, http.client, re
 # Initialize Qt resources from file resources.py
 from .resources import *
 # Import the code for the dialog
@@ -97,9 +98,9 @@ class MyHTMLParser(HTMLParser):
             self.__child__.append(data)
             #print(self.__child__)
         # Set child file size using regular expression
-        match = re.match(r'(\d+[A-Za-z])', data) # NNX
+        match = re.match(r'(\d+[A-Za-z])', data) # N...X
         if not match:
-            match = re.match(r'(\d+\.?\d+[A-Za-z])', data) # N.NX
+            match = re.match(r'(\d+\.?\d+[A-Za-z])', data) # N.N...X
         if match and self.__child__ != []:
             # Adds a space between value and unit and a B as sufix
             self.__child__.append('{} {}B'.format(data[:-1], data[-1]))
@@ -167,8 +168,9 @@ class WorkerDownloadManager(QgsTask):
     # Signals emitted
     textProgress = pyqtSignal(str) # text for progress dialog
     processResult = pyqtSignal(list) # process result
+    barMax = pyqtSignal(float) # max number of progress bar
 
-    def __init__(self, iface, desc, url, dirPad, outFile, barMax, listUnzipOptions):
+    def __init__(self, iface, desc, listUrls, dirPad, listUnzipOptions):
         """Constructor."""
 
         # Mother class constructor QgsTask (subclass)
@@ -178,68 +180,87 @@ class WorkerDownloadManager(QgsTask):
         self.iface = iface
         self.project = QgsProject.instance()
         self.msgBar = self.iface.messageBar()
-        self.outFile = outFile
-        self.url = url
+        self.listUrls = listUrls
+        self.totalUrls = len(self.listUrls)
         self.dirPad = dirPad
         self.pluginIcon = QIcon(':/plugins/ibgedatadownloader/icon.png')
-        self.barMax = barMax
         self.unzip = listUnzipOptions[1] if listUnzipOptions[0] else False
+
+    def _getFileSize(self, url):
+        """Returns file size of the url"""
+
+        u = urllib.request.urlopen(url)
+        meta = u.headers
+        fileSize = int(meta.get('Content-Length'))
+        return fileSize
 
     def finished(self, result):
         """This function is called automatically when the task is completed and is
         called from the main thread so it is safe to interact with the GUI etc here"""
 
         if result is False:
-            self.msgBar.pushMessage(self.tr(u'Error'),self.tr(u'Oops, something went wrong! Please, contact the developer by e-mail.'), Qgis.Critical, duration=0)
+            self.msgBar.pushMessage(self.tr(u'Error'), self.tr(u'Oops, something went wrong! Please, contact the developer by e-mail.'), Qgis.Critical, duration=0)
         else:
-            self.msgBar.pushMessage(self.tr(u'Success'),self.tr(u'Process completed.'), Qgis.Success, duration=0)
+            self.msgBar.pushMessage(self.tr(u'Success'), self.tr(u'Process completed.'), Qgis.Success, duration=0)
 
     def run(self):
         """Principal method that is automatically called when the task runs."""
 
-        # Adjusting progress bar
-        file_size_dl = 0
-        self.setProgress(file_size_dl)
+        fails = 0
+        for n, u in enumerate(self.listUrls):
+            url = u[1]
+            fileSize = self._getFileSize(url)
 
-        fileName = os.path.basename(self.outFile)
-        try:
-            u = urllib.request.urlopen(self.url)
-        except:
-            self.processResult.emit([self.tr(u'Failed to open url {}.').format(self.url), Qgis.Critical])
-            return False
-        
-        # Creates directory for product year, if it doesn't exists
-        if not os.path.isdir(self.dirPad):
-            os.makedirs(self.dirPad)
-        
-        # Open file
-        f = open(self.outFile, 'wb')
-        msg = self.tr('Downloading {}...').format(fileName)
-        self.textProgress.emit(msg)
-        #print "Downloading: %s Bytes: %s" % (self.outFile, file_size)
+            # Adjusting progress bar
+            self.barMax.emit(100)
 
-        file_size_dl = 0
-        block_sz = 8192
-        while True:
-            buffer = u.read(block_sz)
-            if not buffer:
-                break
-            file_size_dl += len(buffer)
-            f.write(buffer)
-            self.setProgress(file_size_dl)
-            #status = r"%10d  [%3.2f%%]" % (file_size_dl, file_size_dl * 100. / file_size)
-            #status = status + chr(8)*(len(status)+1)
-            #print status,
-        f.close()
-
-        # Extracting downloaded files
-        if self.unzip:
-            msg = self.tr(u'Extracting files from {}...').format(fileName)
+            fileName = os.path.basename(url)
+            outFile = os.path.join(self.dirPad, fileName)
+            try:
+                u = urllib.request.urlopen(url)
+            except:
+                self.processResult.emit([self.tr(u'Failed to open url {}.').format(url), Qgis.Critical])
+                #return False
+                fails += 1
+                continue
+            
+            # Creates directory for product, if it doesn't exists
+            if not os.path.isdir(self.dirPad):
+                os.makedirs(self.dirPad)
+            
+            # Downloading file
+            f = open(outFile, 'wb')
+            msg = self.tr('{n}/{total} - Downloading {file}...').format(n=n+1, total=self.totalUrls, file=fileName)
             self.textProgress.emit(msg)
-            with zipfile.ZipFile(os.path.join(self.dirPad, fileName), 'r') as zip_ref:
-                zip_ref.extractall(self.dirPad)
+            #print "Downloading: %s Bytes: %s" % (outFile, file_size)
+            file_size_dl = 0
+            block_sz = 8192
+            while True:
+                buffer = u.read(block_sz)
+                if not buffer:
+                    break
+                file_size_dl += len(buffer)
+                f.write(buffer)
+                self.setProgress(file_size_dl*100/fileSize)
+                #status = r"%10d  [%3.2f%%]" % (file_size_dl, file_size_dl * 100. / file_size)
+                #status = status + chr(8)*(len(status)+1)
+                #print status,
+            f.close()
 
-        self.processResult.emit([self.tr(u'Process completed. Check your file(s) at <a href="{saida}">{saida}</a>.').format(saida=self.dirPad), Qgis.Success])
+            # Extracting downloaded files
+            if self.unzip and any(fileName.endswith(ext) for ext in ('.zip', '.tar')):
+                msg = self.tr(u'{n}/{total} - Extracting files from {file}...').format(n=n+1, total=self.totalUrls, file=fileName)
+                self.textProgress.emit(msg)
+                if fileName.endswith('zip'):
+                    # Extract zip file
+                    with zipfile.ZipFile(os.path.join(self.dirPad, fileName), 'r') as zip_ref:
+                        zip_ref.extractall(self.dirPad)
+                else:
+                    # Extract tar file
+                    with tarfile.open(os.path.join(self.dirPad, fileName), 'r') as tar_ref:
+                        tar_ref.extractall(self.dirPad)
+
+        self.processResult.emit([self.tr(u'Process completed with {fails} fails. Check your file(s) at <a href="{saida}">{saida}</a>.').format(fails=fails, saida=self.dirPad), Qgis.Success])
         return True
 
 
@@ -299,7 +320,7 @@ class IbgeDataDownloader:
         self.htmlParser = MyHTMLParser()
         self.baseUrl = 'https://geoftp.ibge.gov.br/'
         self.itemsExpanded = []
-        self.selectedProductUrl = ''
+        self.selectedProductsUrl = []
         self.dirSaida = ''
 
     # noinspection PyMethodMayBeStatic
@@ -422,7 +443,6 @@ class IbgeDataDownloader:
         dialog.setWindowIcon(self.pluginIcon)
         progressBar = QProgressBar(dialog)
         progressBar.setTextVisible(True)
-        progressBar.setMaximum(self.barMax)
         progressBar.setValue(value)
         dialog.setBar(progressBar)
         dialog.setMinimumWidth(300)
@@ -436,6 +456,15 @@ class IbgeDataDownloader:
                 i.setVisible(False)
         '''
         return dialog, progressBar
+
+    def setMaximumProgressBar(self, maxN):
+        """Sets maximum of the progress bar"""
+
+        #self.progressBar.reset()
+        self.progressValue = 0
+        self.progressBar.setRange(self.progressValue, int(maxN))
+        self.progressBar.setValue(self.progressValue)
+        #print(int(maxN))
 
     def canceledProgressDialog(self):
         """Shows progress dialog when it's 'canceled' too soon."""
@@ -453,8 +482,9 @@ class IbgeDataDownloader:
         """Defines the label of the progress dialog."""
 
         self.dlgBar.setLabelText(txt)
-        if txt.startswith(self.tr('Extracting')):
-            self.progressBar.setMaximum(0)
+        if self.tr('Extracting files') in txt:
+            self.progressBar.setRange(0, 0)
+            self.progressBar.setValue(0)
 
     def dlgDirSaida(self, checked):
         """Opens dialog to indicate the output directory."""
@@ -520,24 +550,44 @@ class IbgeDataDownloader:
     def treeViewClicked(self, modelIndex):
         """Slot of clicked signal that constructs the items URL and enables the OK button"""
 
-        parents = [modelIndex.data()] if modelIndex.data() not in self.baseUrl else []
-        parent = modelIndex.parent()
-        #print(modelIndex.parent(), modelIndex.parent().data())
-        while parent.data() != None and parent.data() not in self.baseUrl:
-            parents.insert(0, parent.data())
-            parent = parent.parent()
-        
-        self.selectedProductUrl = '{base}{subPath}'.format(base=self.baseUrl, subPath='/'.join(parents))
-        #print(self.selectedProductUrl)
+        if modelIndex.column() == 0:
+            # Gets all parents and the item to create the URL
+            parents = [modelIndex.data()] if modelIndex.data() not in self.baseUrl else []
+            parent = modelIndex.parent()
+            #print(modelIndex.parent(), modelIndex.parent().data())
+            while parent.data() != None and parent.data() not in self.baseUrl:
+                parents.insert(0, parent.data())
+                parent = parent.parent()
+            productUrl = '{base}{subPath}'.format(base=self.baseUrl, subPath='/'.join(parents))
 
-        # Check if the unzip option can be enabled
-        if any(ext in self.selectedProductUrl for ext in ('.zip', '.rar')):
-            self.dlg.checkBox_Unzip.setEnabled(True)
-        else:
-            self.dlg.checkBox_Unzip.setEnabled(False)
+            # Add or remove from products variable
+            model = modelIndex.model()
+            node = model.itemFromIndex(modelIndex)
+            #print(node.checkState())
+            if node.checkState() == Qt.CheckState.Checked:
+                self.selectedProductsUrl.append([modelIndex, productUrl])
+                qtdProducts = len(self.selectedProductsUrl)
+                self.dlg.label_ProductsSelected.setText(self.tr(u'{} Product(s) selected'.format(qtdProducts)))
+            else:
+                for p in self.selectedProductsUrl:
+                    if p[1] == productUrl:
+                        self.selectedProductsUrl.remove(p)
+                qtdProducts = len(self.selectedProductsUrl)
+                self.dlg.label_ProductsSelected.setText(self.tr(u'{} Product(s) selected'.format(qtdProducts)))
 
-        # Check if OK button can be enabled
-        self._checkOkButton()
+            # Check if the unzip option can be enabled
+            if self.selectedProductsUrl:
+                for p in self.selectedProductsUrl:
+                    if any(p[1].endswith(ext) for ext in ('.zip', '.tar')):
+                        self.dlg.checkBox_Unzip.setEnabled(True)
+                        break
+                    else:
+                        self.dlg.checkBox_Unzip.setEnabled(False)
+            else:
+                self.dlg.checkBox_Unzip.setEnabled(False)
+
+            # Check if OK button can be enabled
+            self._checkOkButton()
 
     def treeViewExpanded(self, modelIndex):
         """Slot of expanded signal that adds item's children to the tree"""
@@ -579,17 +629,20 @@ class IbgeDataDownloader:
             self.itemsExpanded.append(modelIndex)
 
     def _addTreeViewParentChildNode(self, parent, child=None):
-        """Adds parent and/or children nodes to the QTreeView"""
+        """Adds parent or children nodes to the QTreeView"""
 
         model = self.dlg.treeView.model()
         if not model:
             model = QStandardItemModel(0, 3)
             model.setHorizontalHeaderLabels([self.tr('Products Tree'), self.tr('File size'), self.tr('Last modified')])
 
+        # Creates standard empty item
+        emptyNode = QStandardItem('')
+
         if not child:
             parentNode = QStandardItem(parent)
-            parentNode.appendRow([QStandardItem(''), QStandardItem(''), QStandardItem('')])
-            model.appendRow([parentNode, QStandardItem(''), QStandardItem('')])
+            parentNode.appendRow([emptyNode, emptyNode, emptyNode])
+            model.appendRow([parentNode, emptyNode, emptyNode])
         else:
             if type(parent) == QModelIndex:
                 #print(u'é QModelIndex', child)
@@ -597,26 +650,44 @@ class IbgeDataDownloader:
                 childNode = QStandardItem(child[0])
             if '.' not in childNode.text():
                 if not childNode.hasChildren():
-                    childNode.appendRow(QStandardItem(''))
+                    childNode.appendRow(emptyNode)
+            else:
+                childNode.setCheckable(True)
             #print(child)
             try:
                 childNodeSize = QStandardItem(child[2])
             except IndexError:
-                childNodeSize = QStandardItem('')
+                childNodeSize = emptyNode
             try:
                 childNodeDate = QStandardItem(child[1])
             except IndexError:
-                childNodeDate = QStandardItem('')
+                childNodeDate = emptyNode
             parentNode.appendRow([childNode, childNodeSize, childNodeDate])
             #print(childNode.text(), childNode.row(), childNode.column())
             #print(childNodeSize.text(), childNodeSize.row(), childNodeSize.column())
             #print(childNodeDate.text(), childNodeDate.row(), childNodeDate.column())
 
-        # Adjusting headers size
-        header = self.dlg.treeView.header()
-        header.setSectionResizeMode(QHeaderView.ResizeToContents)
-
         self.dlg.treeView.setModel(model)
+
+    def uncheckAll(self):
+        """Slot of uncheck all button clicked signal that unchecks all products and options"""
+
+        # Iterate trough products list
+        model = self.dlg.treeView.model()
+        for p in self.selectedProductsUrl:
+            modelIndex = p[0]
+            node = model.itemFromIndex(modelIndex)
+            node.setCheckState(False)
+            #self.treeViewClicked(modelIndex)
+        
+        # Set label of selected products
+        self.dlg.label_ProductsSelected.setText(self.tr(u'0 Product(s) selected'))
+        # Clear products urls list
+        self.selectedProductsUrl = []
+        # Uncheck options
+        self.dlg.checkBox_Unzip.setChecked(False)
+        self.dlg.checkBox_Unzip.setEnabled(False)
+        self._checkOkButton()
 
     def _configDialogs(self):
         """Configures dialog and connects signals/slots."""
@@ -624,16 +695,22 @@ class IbgeDataDownloader:
         # Set window icon
         self.dlg.setWindowIcon(self.pluginIcon)
 
+        # Adjusting headers size mode
+        header = self.dlg.treeView.header()
+        header.setSectionResizeMode(QHeaderView.ResizeToContents)
+
+        # Sets selection mode
+        self.dlg.treeView.setSelectionMode(QAbstractItemView.NoSelection)
+
         # Signals
         self.dlg.pushButton_Dir.clicked.connect(self.dlgDirSaida)
         self.dlg.treeView.clicked.connect(self.treeViewClicked)
         self.dlg.treeView.expanded.connect(self.treeViewExpanded)
+        self.dlg.pushButton_UncheckAll.clicked.connect(self.uncheckAll)
 
         # Populate tree for product selection
         #url = '{}organizacao_do_territorio/'.format(self.baseUrl)
         url = self.baseUrl
-        self.htmlParser.reset()
-        self.htmlParser.feed(http.client.parse_headers(urllib.request.urlopen(url)).as_string())
         
         # Add top parent to the tree
         parent = os.path.basename(os.path.normpath(url))
@@ -647,51 +724,39 @@ class IbgeDataDownloader:
     def _checkOkButton(self):
         """Enables or disables OK button"""
 
-        if self.selectedProductUrl[-4] != '':
-            if self.selectedProductUrl[-4] == '.' and self.dirSaida != '':
-                # Enable OK button
-                self.dlg.button_box.button(QDialogButtonBox.Ok).setEnabled(True)
-            else:
-                # Disable OK button
-                self.dlg.button_box.button(QDialogButtonBox.Ok).setEnabled(False)
-
-    def _getFileSize(self, url):
-        """Returns file size of the url"""
-
-        u = urllib.request.urlopen(url)
-        meta = u.headers
-        fileSize = int(meta.get('Content-Length'))
-        return fileSize
+        for p in self.selectedProductsUrl:
+            if p[1][-4] != '':
+                if p[1][-4] == '.' and self.dirSaida != '':
+                    # Enable OK button
+                    self.dlg.button_box.button(QDialogButtonBox.Ok).setEnabled(True)
+                else:
+                    # Disable OK button
+                    self.dlg.button_box.button(QDialogButtonBox.Ok).setEnabled(False)
 
     def _execute(self):
         """Does the real work:
            -Download file
-           -Extract file, if necessary
+           -Extract file, if checked
            -Add selected statistical data *** NOT IMPLEMENTED
            -Add layer to legend panel *** NOT IMPLEMENTED"""
 
         # Preparing product download
-        fileName = os.path.basename(self.selectedProductUrl)
-        outFile = os.path.join(self.dirSaida, fileName)
-        self.barMax = self._getFileSize(self.selectedProductUrl)
-        #print(self.barMax)
         self.dlgBar, self.progressBar = self._progressDialog(0)
         self.dlgBar.show()
-        self.msgBar.pushMessage(self.tr('Processing'),self.tr(u'Working on selected data...'), Qgis.Info, duration=0)
+        self.msgBar.pushMessage(self.tr('Processing'), self.tr(u'Working on selected data...'), Qgis.Info, duration=0)
         
         # Instantiate the background worker and connects slots to signals
         self.taskDesc = self.tr(u'Processing selected data.')
         self.threadTask = WorkerDownloadManager(
                                                 self.iface,
                                                 self.taskDesc,
-                                                self.selectedProductUrl,
+                                                self.selectedProductsUrl,
                                                 self.dirSaida,
-                                                outFile,
-                                                self.barMax,
                                                 [self.dlg.checkBox_Unzip.isEnabled(), self.dlg.checkBox_Unzip.isChecked()]
                                                 )
         self.threadTask.begun.connect(lambda: self.setProgressText(self.taskDesc))
         self.threadTask.progressChanged.connect(self.setProgressValue)
+        self.threadTask.barMax.connect(self.setMaximumProgressBar)
         self.threadTask.textProgress.connect(self.setProgressText)
         self.threadTask.processResult.connect(self.threadResult)
         self.threadTask.taskCompleted.connect(self.endingProcess)
