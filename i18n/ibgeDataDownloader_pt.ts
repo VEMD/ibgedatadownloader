@@ -4,84 +4,89 @@
 <context>
     <name>IbgeDataDownloader</name>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="433"/>
+        <location filename="../ibgeDataDownloader.py" line="448"/>
         <source>&amp;Download data from IBGE</source>
         <translation>Baixar dados do IBGE</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="420"/>
+        <location filename="../ibgeDataDownloader.py" line="435"/>
         <source>IBGE Data Downloader</source>
         <translation>Baixador de dados do IBGE</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="493"/>
+        <location filename="../ibgeDataDownloader.py" line="507"/>
         <source>Output directory</source>
         <translation>Diretório de saída</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="442"/>
+        <location filename="../ibgeDataDownloader.py" line="457"/>
         <source>Processing. Please, wait...</source>
         <translation>Processando. Por favor, aguarde...</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="443"/>
+        <location filename="../ibgeDataDownloader.py" line="458"/>
         <source>Downloading data</source>
         <translation>Baixando dados</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="486"/>
+        <location filename="../ibgeDataDownloader.py" line="500"/>
         <source>Extracting files</source>
         <translation>Extraindo arquivos</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="514"/>
+        <location filename="../ibgeDataDownloader.py" line="536"/>
         <source>Error</source>
         <translation>Erro</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="516"/>
+        <location filename="../ibgeDataDownloader.py" line="538"/>
         <source>Success</source>
         <translation>Sucesso</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="638"/>
+        <location filename="../ibgeDataDownloader.py" line="664"/>
         <source>Products Tree</source>
         <translation>Árvore de Produtos</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="638"/>
+        <location filename="../ibgeDataDownloader.py" line="664"/>
         <source>File size</source>
         <translation>Tamanho</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="638"/>
+        <location filename="../ibgeDataDownloader.py" line="664"/>
         <source>Last modified</source>
         <translation>Data de modificação</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="747"/>
+        <location filename="../ibgeDataDownloader.py" line="773"/>
         <source>Processing</source>
         <translation>Processando</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="747"/>
+        <location filename="../ibgeDataDownloader.py" line="773"/>
         <source>Working on selected data...</source>
         <translation>Trabalhando nos dados selecionados...</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="750"/>
+        <location filename="../ibgeDataDownloader.py" line="776"/>
         <source>Processing selected data.</source>
         <translation>Processando dados selecionados.</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="577"/>
+        <location filename="../ibgeDataDownloader.py" line="602"/>
         <source>{} Product(s) selected</source>
         <translation>{} Produto(s) selecionado(s)</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="685"/>
+        <location filename="../ibgeDataDownloader.py" line="711"/>
         <source>0 Product(s) selected</source>
         <translation>0 Produto(s) selecionado(s)</translation>
+    </message>
+    <message>
+        <location filename="../ibgeDataDownloader.py" line="530"/>
+        <source>Canceled</source>
+        <translation>Cancelado</translation>
     </message>
 </context>
 <context>
@@ -125,44 +130,59 @@
 <context>
     <name>WorkerDownloadManager</name>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="202"/>
+        <location filename="../ibgeDataDownloader.py" line="209"/>
         <source>Error</source>
         <translation>Erro</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="202"/>
+        <location filename="../ibgeDataDownloader.py" line="209"/>
         <source>Oops, something went wrong! Please, contact the developer by e-mail.</source>
         <translation>Oops, algo não saiu bem! Por favor, contate o desenvolvedor por e-mail.</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="204"/>
+        <location filename="../ibgeDataDownloader.py" line="213"/>
         <source>Success</source>
         <translation>Sucesso</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="204"/>
+        <location filename="../ibgeDataDownloader.py" line="213"/>
         <source>Process completed.</source>
         <translation>Processo finalizado.</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="222"/>
+        <location filename="../ibgeDataDownloader.py" line="231"/>
         <source>Failed to open url {}.</source>
         <translation>Falha ao abrir a url {}.</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="233"/>
+        <location filename="../ibgeDataDownloader.py" line="243"/>
         <source>{n}/{total} - Downloading {file}...</source>
         <translation>{n}/{total} - Baixando {file}...</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="263"/>
+        <location filename="../ibgeDataDownloader.py" line="278"/>
         <source>Process completed with {fails} fails. Check your file(s) at &lt;a href=&quot;{saida}&quot;&gt;{saida}&lt;/a&gt;.</source>
         <translation>Processo finalizado com {fails} falhas. Verifique o(s) arquivo(s) em &lt;a href=&quot;{saida}&quot;&gt;{saida}&lt;/a&gt;.</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="252"/>
+        <location filename="../ibgeDataDownloader.py" line="267"/>
         <source>{n}/{total} - Extracting files from {file}...</source>
         <translation>{n}/{total} - Extraindo arquivos de {file}...</translation>
+    </message>
+    <message>
+        <location filename="../ibgeDataDownloader.py" line="211"/>
+        <source>Warning</source>
+        <translation>Aviso</translation>
+    </message>
+    <message>
+        <location filename="../ibgeDataDownloader.py" line="211"/>
+        <source>Process partially completed.</source>
+        <translation>Processo parcialmente finalizado.</translation>
+    </message>
+    <message>
+        <location filename="../ibgeDataDownloader.py" line="251"/>
+        <source>The process was canceled by the user.</source>
+        <translation>O processo foi cancelado pelo usuário.</translation>
     </message>
 </context>
 </TS>

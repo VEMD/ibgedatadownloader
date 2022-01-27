@@ -26,8 +26,7 @@ from qgis.PyQt.QtGui import QIcon, QStandardItemModel, QStandardItem
 from qgis.PyQt.QtWidgets import (
                                  QAction, QFileDialog, QProgressBar,
                                  QProgressDialog, QPushButton, QToolButton,
-                                 QDialogButtonBox, QHeaderView, QAbstractItemView,
-                                 QTreeWidgetItemIterator
+                                 QDialogButtonBox, QHeaderView, QAbstractItemView
                                 )
 from qgis.core import QgsTask, Qgis, QgsProject, QgsApplication
 from html.parser import HTMLParser
@@ -53,7 +52,7 @@ class MyHTMLParser(HTMLParser):
         # Attribute that receive childs tree
         self.__children__ = []
         # Attribute that receives child information
-        self.resetChild()
+        self.__child__ = []
         # Attribute that receives tag <tr> in and out information
         self.__trElement__ = False
 
@@ -99,11 +98,18 @@ class MyHTMLParser(HTMLParser):
             #print(self.__child__)
         # Set child file size using regular expression
         match = re.match(r'(\d+[A-Za-z])', data) # N...X
+        matchType = 1
         if not match:
             match = re.match(r'(\d+\.?\d+[A-Za-z])', data) # N.N...X
+        if not match:
+            match = re.match(r'(^\d+$)', data) # N...
+            matchType = 2
         if match and self.__child__ != []:
             # Adds a space between value and unit and a B as sufix
-            self.__child__.append('{} {}B'.format(data[:-1], data[-1]))
+            if matchType == 1:
+                self.__child__.append('{} {}B'.format(data[:-1], data[-1]))
+            elif matchType == 2:
+                self.__child__.append('{} B'.format(data))
             #print(self.__child__)
 
     def getChildren(self):
@@ -185,6 +191,7 @@ class WorkerDownloadManager(QgsTask):
         self.dirPad = dirPad
         self.pluginIcon = QIcon(':/plugins/ibgedatadownloader/icon.png')
         self.unzip = listUnzipOptions[1] if listUnzipOptions[0] else False
+        self.exception = []
 
     def _getFileSize(self, url):
         """Returns file size of the url"""
@@ -200,6 +207,8 @@ class WorkerDownloadManager(QgsTask):
 
         if result is False:
             self.msgBar.pushMessage(self.tr(u'Error'), self.tr(u'Oops, something went wrong! Please, contact the developer by e-mail.'), Qgis.Critical, duration=0)
+        elif self.exception != []:
+            self.msgBar.pushMessage(self.tr(u'Warning'), self.tr(u'Process partially completed.'), Qgis.Warning, duration=0)
         else:
             self.msgBar.pushMessage(self.tr(u'Success'), self.tr(u'Process completed.'), Qgis.Success, duration=0)
 
@@ -218,9 +227,10 @@ class WorkerDownloadManager(QgsTask):
             outFile = os.path.join(self.dirPad, fileName)
             try:
                 u = urllib.request.urlopen(url)
-            except:
-                self.processResult.emit([self.tr(u'Failed to open url {}.').format(url), Qgis.Critical])
+            except Exception as e:
+                msg = self.tr(u'Failed to open url {}.').format(url)
                 #return False
+                self.exception.append(n, url, msg, e)
                 fails += 1
                 continue
             
@@ -236,6 +246,11 @@ class WorkerDownloadManager(QgsTask):
             file_size_dl = 0
             block_sz = 8192
             while True:
+                # Check if task was canceled by the user
+                if self.isCanceled():
+                    self.processResult.emit([self.tr(u'The process was canceled by the user.'), Qgis.Critical, self.exception, url])
+                    return False
+
                 buffer = u.read(block_sz)
                 if not buffer:
                     break
@@ -260,7 +275,7 @@ class WorkerDownloadManager(QgsTask):
                     with tarfile.open(os.path.join(self.dirPad, fileName), 'r') as tar_ref:
                         tar_ref.extractall(self.dirPad)
 
-        self.processResult.emit([self.tr(u'Process completed with {fails} fails. Check your file(s) at <a href="{saida}">{saida}</a>.').format(fails=fails, saida=self.dirPad), Qgis.Success])
+        self.processResult.emit([self.tr(u'Process completed with {fails} fails. Check your file(s) at <a href="{saida}">{saida}</a>.').format(fails=fails, saida=self.dirPad), Qgis.Success, self.exception])
         return True
 
 
@@ -448,7 +463,7 @@ class IbgeDataDownloader:
         dialog.setMinimumWidth(300)
         dialog.setModal(True)
         dialog.setWindowFlag(Qt.WindowCloseButtonHint, False)
-        #dialog.canceled.connect(self.canceledProgressDialog)
+        dialog.canceled.connect(self.canceledProgressDialog)
         '''
         for i in dialog.children():
             if type(i) == QPushButton:
@@ -467,10 +482,9 @@ class IbgeDataDownloader:
         #print(int(maxN))
 
     def canceledProgressDialog(self):
-        """Shows progress dialog when it's 'canceled' too soon."""
+        """Cancels the task."""
 
-        self.progressBar.setValue(self.progressValue)
-        self.dlgBar.show()
+        self.threadTask.cancel()
 
     def setProgressValue(self, val):
         """Defines value of progress bar."""
@@ -501,21 +515,32 @@ class IbgeDataDownloader:
         """Keeps reference of the worker result"""
 
         self.pluginResult = result
-        self.endingProcess()
+        #self.endingProcess()
 
     def endingProcess(self):
         """Closes progress dialog and finishes the job"""
 
+        # Close progress dialog
         self.dlgBar.setClose(True)
         self.dlgBar.close()
 
-        if self.pluginResult[1] == Qgis.Critical:
+        # Define message title and deal with remaining data, if necessary
+        if len(self.pluginResult) > 3:
+            msgType = self.tr('Canceled')
+            # Delete remaining data
+            fileName = os.path.basename(self.pluginResult[3])
+            if os.path.isfile(os.path.join(self.dirSaida, fileName)):
+                os.remove(os.path.join(self.dirSaida, fileName))
+        elif self.pluginResult[1] == Qgis.Critical:
             msgType = self.tr('Error')
         else:
             msgType = self.tr('Success')
 
         self.msgBar.clearWidgets()
-        self.msgBar.pushMessage(msgType, self.pluginResult[0], self.pluginResult[1], duration=0)
+        if self.pluginResult[2] != []:
+            self.msgBar.pushMessage(msgType, self.pluginResult[0], '\n\n'.join(self.pluginResult[2]), self.pluginResult[1], duration=0)
+        else:
+            self.msgBar.pushMessage(msgType, self.pluginResult[0], self.pluginResult[1], duration=0)
 
     def _padronizaTexto(self, texto):
         """Standardizes texts to check equality."""
@@ -620,10 +645,11 @@ class IbgeDataDownloader:
             
             # Add children to the tree
             #print(children)
-            for child in children:
-                #print('adicionando {} ao item {}'.format(child.replace('/', ''), modelIndex.data()))
-                child[0] = child[0].replace('/', '')
-                self._addTreeViewParentChildNode(modelIndex, child)
+            if children:
+                for child in children:
+                    #print('adicionando {} ao item {}'.format(child.replace('/', ''), modelIndex.data()))
+                    child[0] = child[0].replace('/', '')
+                    self._addTreeViewParentChildNode(modelIndex, child)
 
             # Add the item to expanded list
             self.itemsExpanded.append(modelIndex)
@@ -760,7 +786,7 @@ class IbgeDataDownloader:
         self.threadTask.textProgress.connect(self.setProgressText)
         self.threadTask.processResult.connect(self.threadResult)
         self.threadTask.taskCompleted.connect(self.endingProcess)
-        #self.threadTask.taskTerminated.connect(lambda: self.dlgBar.close())
+        self.threadTask.taskTerminated.connect(self.endingProcess)
         self.taskManager.addTask(self.threadTask)
         # Hide QGIS native progress button
         self.qgisProgressButton.hide()
