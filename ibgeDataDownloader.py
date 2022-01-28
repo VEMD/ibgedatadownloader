@@ -28,7 +28,7 @@ from qgis.PyQt.QtWidgets import (
                                  QProgressDialog, QPushButton, QToolButton,
                                  QDialogButtonBox, QHeaderView, QAbstractItemView
                                 )
-from qgis.core import QgsTask, Qgis, QgsProject, QgsApplication
+from qgis.core import QgsTask, Qgis, QgsProject, QgsApplication, QgsVectorLayer, QgsProject
 from html.parser import HTMLParser
 import os, unicodedata, urllib, zipfile, tarfile, http, http.client, re
 # Initialize Qt resources from file resources.py
@@ -48,54 +48,54 @@ class MyHTMLParser(HTMLParser):
         super(MyHTMLParser, self).__init__()
 
         # Attribute that receive parent tree
-        self.__parent__ = None
+        self.parent = None
         # Attribute that receive childs tree
-        self.__children__ = []
+        self.children = []
         # Attribute that receives child information
-        self.__child__ = []
+        self.child = []
         # Attribute that receives tag <tr> in and out information
-        self.__trElement__ = False
+        self.trElement = False
 
     def handle_starttag(self, tag, attrs):
-        """Overrides to feed __parent__ and __child__"""
+        """Overrides to feed parent and child"""
 
         if tag == 'tr':
-            self.__trElement__ = True
-            #print(tag, self.__trElement__)
+            self.trElement = True
+            #print(tag, self.trElement)
 
         if tag == 'a':
             for attr in attrs:
                 if attr[1].startswith('/'):
                     # Set parent
-                    self.__parent__ = attr[1]
+                    self.parent = attr[1]
                 if not any(attr[1].startswith(item) for item in ('?', '/')):
                     # Set child name
-                    self.__child__ = [attr[1]]
+                    self.child = [attr[1]]
                     #print('adicionou handle_starttag')
-            #print(tag, self.__child__)
+            #print(tag, self.child)
 
     def handle_endtag(self, tag):
-        """Overrides to feed __children__ and reset __child__"""
+        """Overrides to feed children and reset child"""
 
         if tag == 'tr':
-            self.__trElement__ = False
-            # If child is valid, append to __children__
-            if self.__child__ != []:
-                self.__children__.append(self.__child__)
-            # Reset __child__
+            self.trElement = False
+            # If child is valid, append to children
+            if self.child != []:
+                self.children.append(self.child)
+            # Reset child
             self.resetChild()
-            #print(tag, self.__trElement__)
+            #print(tag, self.trElement)
 
     def handle_data(self, data):
-        """Overrides to feed information about __child__"""
+        """Overrides to feed information about child"""
 
         # Remove white spaces at start / end of the string
         data = data.lstrip().rstrip()
         # Set child last modified date
         match = re.match(r'(\d+-\d+-\d+ \d+:\d+)', data)
-        if match and self.__child__ != []:
-            self.__child__.append(data)
-            #print(self.__child__)
+        if match and self.child != []:
+            self.child.append(data)
+            #print(self.child)
         # Set child file size using regular expression
         match = re.match(r'(\d+[A-Za-z])', data) # N...X
         matchType = 1
@@ -104,38 +104,38 @@ class MyHTMLParser(HTMLParser):
         if not match:
             match = re.match(r'(^\d+$)', data) # N...
             matchType = 2
-        if match and self.__child__ != []:
+        if match and self.child != []:
             # Adds a space between value and unit and a B as sufix
             if matchType == 1:
-                self.__child__.append('{} {}B'.format(data[:-1], data[-1]))
+                self.child.append('{} {}B'.format(data[:-1], data[-1]))
             elif matchType == 2:
-                self.__child__.append('{} B'.format(data))
-            #print(self.__child__)
+                self.child.append('{} B'.format(data))
+            #print(self.child)
 
     def getChildren(self):
         """Returns childs"""
 
-        return self.__children__ if self.__children__ else None
+        return self.children if self.children else None
 
     def getParent(self):
         """Returns parent"""
 
-        return self.__parent__
+        return self.parent
 
     def resetChild(self):
         """Resets child attribute"""
 
-        self.__child__ = []
+        self.child = []
 
     def resetChildren(self):
         """Resets children attribute"""
 
-        self.__children__ = []
+        self.children = []
 
     def resetParent(self):
         """Resets parent attribute"""
 
-        self.__parent__ = None
+        self.parent = None
 
 
 class MyProgressDialog(QProgressDialog):
@@ -275,7 +275,7 @@ class WorkerDownloadManager(QgsTask):
                     with tarfile.open(os.path.join(self.dirPad, fileName), 'r') as tar_ref:
                         tar_ref.extractall(self.dirPad)
 
-        self.processResult.emit([self.tr(u'Process completed with {fails} fails. Check your file(s) at <a href="{saida}">{saida}</a>.').format(fails=fails, saida=self.dirPad), Qgis.Success, self.exception])
+        self.processResult.emit([self.tr(u'Process completed with {fails} fails. Check your file(s) at <a href="{saida}">{saida}</a>.').format(fails=fails, saida=self.dirPad), Qgis.Success, self.exception, self.listUrls])
         return True
 
 
@@ -333,7 +333,8 @@ class IbgeDataDownloader:
         self.msgBar = self.iface.messageBar()
         self.taskManager = QgsApplication.taskManager()
         self.htmlParser = MyHTMLParser()
-        self.baseUrl = 'https://geoftp.ibge.gov.br/'
+        self.geobaseUrl = 'https://geoftp.ibge.gov.br/'
+        self.statbaseUrl = 'https://ftp.ibge.gov.br/'
         self.itemsExpanded = []
         self.selectedProductsUrl = []
         self.dirSaida = ''
@@ -525,7 +526,7 @@ class IbgeDataDownloader:
         self.dlgBar.close()
 
         # Define message title and deal with remaining data, if necessary
-        if len(self.pluginResult) > 3:
+        if self.tr('canceled') in self.pluginResult[0]:
             msgType = self.tr('Canceled')
             # Delete remaining data
             fileName = os.path.basename(self.pluginResult[3])
@@ -535,6 +536,30 @@ class IbgeDataDownloader:
             msgType = self.tr('Error')
         else:
             msgType = self.tr('Success')
+            # Add layer (if possible)
+            if self.dlg.checkBox_AddLayer.isChecked():
+                for i in self.pluginResult[3]:
+                    fileName = os.path.basename(i[1])
+                    file = os.path.join(self.dirSaida, fileName)
+                    if fileName.endswith('.zip'):
+                        files = zipfile.ZipFile(file).namelist()
+                    elif fileName.endswith('.tar'):
+                        files = tarfile.TarFile(file).getnames()
+                    for j in files:
+                        if j.endswith('.shp'):
+                            l = QgsVectorLayer(os.path.join(self.dirSaida, j), j, 'ogr')
+                            # Extent enlarged of 1/25
+                            extent = l.extent()
+                            xMin = extent.xMinimum()
+                            yMin = extent.yMinimum()
+                            xMax = extent.xMaximum()
+                            yMax = extent.yMaximum()
+                            diagonal = ((xMax - xMin) ** 2 + (yMax - yMin) ** 2) ** 0.5
+                            buffer = 0.04 * diagonal  
+                            extent = extent.buffered(buffer)
+                            # Add layer
+                            QgsProject.instance().addMapLayer(l)
+                            self.iface.mapCanvas().setExtent(extent)
 
         self.msgBar.clearWidgets()
         if self.pluginResult[2] != []:
@@ -575,33 +600,40 @@ class IbgeDataDownloader:
     def treeViewClicked(self, modelIndex):
         """Slot of clicked signal that constructs the items URL and enables the OK button"""
 
+        if self.dlg.tabWidget.currentIndex() == 0:
+            baseUrl = self.geobaseUrl
+            treeView = self.dlg.treeView_Geo
+        else:
+            baseUrl = self.statbaseUrl
+            treeView = self.dlg.treeView_Stat
+
         if modelIndex.column() == 0:
             # Gets all parents and the item to create the URL
-            parents = [modelIndex.data()] if modelIndex.data() not in self.baseUrl else []
+            parents = [modelIndex.data()] if modelIndex.data() not in baseUrl else []
             parent = modelIndex.parent()
             #print(modelIndex.parent(), modelIndex.parent().data())
-            while parent.data() != None and parent.data() not in self.baseUrl:
+            while parent.data() != None and parent.data() not in baseUrl:
                 parents.insert(0, parent.data())
                 parent = parent.parent()
-            productUrl = '{base}{subPath}'.format(base=self.baseUrl, subPath='/'.join(parents))
+            productUrl = '{base}{subPath}'.format(base=baseUrl, subPath='/'.join(parents))
 
             # Add or remove from products variable
             model = modelIndex.model()
             node = model.itemFromIndex(modelIndex)
             #print(node.checkState())
             if node.checkState() == Qt.CheckState.Checked:
-                self.selectedProductsUrl.append([modelIndex, productUrl])
+                self.selectedProductsUrl.append([modelIndex, productUrl, treeView])
                 qtdProducts = len(self.selectedProductsUrl)
-                self.dlg.label_ProductsSelected.setText(self.tr(u'{} Product(s) selected'.format(qtdProducts)))
             else:
                 for p in self.selectedProductsUrl:
                     if p[1] == productUrl:
                         self.selectedProductsUrl.remove(p)
                 qtdProducts = len(self.selectedProductsUrl)
-                self.dlg.label_ProductsSelected.setText(self.tr(u'{} Product(s) selected'.format(qtdProducts)))
+            self.dlg.label_ProductsSelected.setText(u'{p} {t}'.format(p=qtdProducts, t=self.tr(u'Product(s) selected')))
 
             # Check if the unzip option can be enabled
             if self.selectedProductsUrl:
+                self.dlg.checkBox_AddLayer.setEnabled(True)
                 for p in self.selectedProductsUrl:
                     if any(p[1].endswith(ext) for ext in ('.zip', '.tar')):
                         self.dlg.checkBox_Unzip.setEnabled(True)
@@ -610,12 +642,20 @@ class IbgeDataDownloader:
                         self.dlg.checkBox_Unzip.setEnabled(False)
             else:
                 self.dlg.checkBox_Unzip.setEnabled(False)
+                self.dlg.checkBox_AddLayer.setEnabled(False)
 
             # Check if OK button can be enabled
             self._checkOkButton()
 
     def treeViewExpanded(self, modelIndex):
         """Slot of expanded signal that adds item's children to the tree"""
+
+        if self.dlg.tabWidget.currentIndex() == 0:
+            baseUrl = self.geobaseUrl
+            treeView = self.dlg.treeView_Geo
+        else:
+            baseUrl = self.statbaseUrl
+            treeView = self.dlg.treeView_Stat
 
         if modelIndex not in self.itemsExpanded:
             # Deletes first empty child
@@ -626,16 +666,16 @@ class IbgeDataDownloader:
                 node.removeRow(0)
 
             # Gets item's parents
-            parents = [modelIndex.data()] if modelIndex.data() not in self.baseUrl else []
+            parents = [modelIndex.data()] if modelIndex.data() not in baseUrl else []
             parent = modelIndex.parent()
             #print(modelIndex.parent(), modelIndex.parent().data())
-            while parent.data() != None and parent.data() not in self.baseUrl:
+            while parent.data() != None and parent.data() not in baseUrl:
                 parents.insert(0, parent.data())
                 parent = parent.parent()
 
             # Adds item's children
             #print('/'.join(parents))
-            url = '{base}{subPath}/'.format(base=self.baseUrl, subPath='/'.join(parents))
+            url = '{base}{subPath}/'.format(base=baseUrl, subPath='/'.join(parents))
             #print(url)
             self.htmlParser.resetParent()
             self.htmlParser.resetChildren()
@@ -649,15 +689,15 @@ class IbgeDataDownloader:
                 for child in children:
                     #print('adicionando {} ao item {}'.format(child.replace('/', ''), modelIndex.data()))
                     child[0] = child[0].replace('/', '')
-                    self._addTreeViewParentChildNode(modelIndex, child)
+                    self._addTreeViewParentChildNode(treeView, modelIndex, child)
 
             # Add the item to expanded list
             self.itemsExpanded.append(modelIndex)
 
-    def _addTreeViewParentChildNode(self, parent, child=None):
+    def _addTreeViewParentChildNode(self, treeView, parent, child=None):
         """Adds parent or children nodes to the QTreeView"""
 
-        model = self.dlg.treeView.model()
+        model = treeView.model()
         if not model:
             model = QStandardItemModel(0, 3)
             model.setHorizontalHeaderLabels([self.tr('Products Tree'), self.tr('File size'), self.tr('Last modified')])
@@ -693,14 +733,14 @@ class IbgeDataDownloader:
             #print(childNodeSize.text(), childNodeSize.row(), childNodeSize.column())
             #print(childNodeDate.text(), childNodeDate.row(), childNodeDate.column())
 
-        self.dlg.treeView.setModel(model)
+        treeView.setModel(model)
 
     def uncheckAll(self):
         """Slot of uncheck all button clicked signal that unchecks all products and options"""
 
         # Iterate trough products list
-        model = self.dlg.treeView.model()
         for p in self.selectedProductsUrl:
+            model = p[2].model()
             modelIndex = p[0]
             node = model.itemFromIndex(modelIndex)
             node.setCheckState(False)
@@ -713,6 +753,9 @@ class IbgeDataDownloader:
         # Uncheck options
         self.dlg.checkBox_Unzip.setChecked(False)
         self.dlg.checkBox_Unzip.setEnabled(False)
+        self.dlg.checkBox_AddLayer.setChecked(False)
+        self.dlg.checkBox_AddLayer.setEnabled(False)
+        # Disable OK button
         self._checkOkButton()
 
     def _configDialogs(self):
@@ -722,42 +765,48 @@ class IbgeDataDownloader:
         self.dlg.setWindowIcon(self.pluginIcon)
 
         # Adjusting headers size mode
-        header = self.dlg.treeView.header()
-        header.setSectionResizeMode(QHeaderView.ResizeToContents)
+        self.dlg.treeView_Geo.header().setSectionResizeMode(QHeaderView.ResizeToContents)
+        self.dlg.treeView_Stat.header().setSectionResizeMode(QHeaderView.ResizeToContents)
 
         # Sets selection mode
-        self.dlg.treeView.setSelectionMode(QAbstractItemView.NoSelection)
+        self.dlg.treeView_Geo.setSelectionMode(QAbstractItemView.NoSelection)
+        self.dlg.treeView_Stat.setSelectionMode(QAbstractItemView.NoSelection)
 
         # Signals
         self.dlg.pushButton_Dir.clicked.connect(self.dlgDirSaida)
-        self.dlg.treeView.clicked.connect(self.treeViewClicked)
-        self.dlg.treeView.expanded.connect(self.treeViewExpanded)
+        self.dlg.treeView_Geo.clicked.connect(self.treeViewClicked)
+        self.dlg.treeView_Geo.expanded.connect(self.treeViewExpanded)
+        self.dlg.treeView_Stat.clicked.connect(self.treeViewClicked)
+        self.dlg.treeView_Stat.expanded.connect(self.treeViewExpanded)
         self.dlg.pushButton_UncheckAll.clicked.connect(self.uncheckAll)
 
         # Populate tree for product selection
-        #url = '{}organizacao_do_territorio/'.format(self.baseUrl)
-        url = self.baseUrl
+        #url = '{}organizacao_do_territorio/'.format(self.geobaseUrl)
         
         # Add top parent to the tree
-        parent = os.path.basename(os.path.normpath(url))
-        self._addTreeViewParentChildNode(parent)
+        self._addTreeViewParentChildNode(self.dlg.treeView_Geo, os.path.basename(os.path.normpath(self.geobaseUrl)))
+        self._addTreeViewParentChildNode(self.dlg.treeView_Stat, os.path.basename(os.path.normpath(self.statbaseUrl)))
 
         # Disable OK button
         self.dlg.button_box.button(QDialogButtonBox.Ok).setEnabled(False)
         # Disable options
         self.dlg.checkBox_Unzip.setEnabled(False)
+        self.dlg.checkBox_AddLayer.setEnabled(False)
 
     def _checkOkButton(self):
         """Enables or disables OK button"""
 
-        for p in self.selectedProductsUrl:
-            if p[1][-4] != '':
-                if p[1][-4] == '.' and self.dirSaida != '':
+        if self.selectedProductsUrl:
+            for p in self.selectedProductsUrl:
+                if os.path.splitext(p[1])[1] != '' and self.dirSaida != '':
                     # Enable OK button
                     self.dlg.button_box.button(QDialogButtonBox.Ok).setEnabled(True)
                 else:
                     # Disable OK button
                     self.dlg.button_box.button(QDialogButtonBox.Ok).setEnabled(False)
+        else:
+            # Disable OK button
+            self.dlg.button_box.button(QDialogButtonBox.Ok).setEnabled(False)
 
     def _execute(self):
         """Does the real work:

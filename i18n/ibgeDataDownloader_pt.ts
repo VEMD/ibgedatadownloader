@@ -4,89 +4,99 @@
 <context>
     <name>IbgeDataDownloader</name>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="448"/>
+        <location filename="../ibgeDataDownloader.py" line="449"/>
         <source>&amp;Download data from IBGE</source>
         <translation>Baixar dados do IBGE</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="435"/>
+        <location filename="../ibgeDataDownloader.py" line="436"/>
         <source>IBGE Data Downloader</source>
         <translation>Baixador de dados do IBGE</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="507"/>
+        <location filename="../ibgeDataDownloader.py" line="508"/>
         <source>Output directory</source>
         <translation>Diretório de saída</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="457"/>
+        <location filename="../ibgeDataDownloader.py" line="458"/>
         <source>Processing. Please, wait...</source>
         <translation>Processando. Por favor, aguarde...</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="458"/>
+        <location filename="../ibgeDataDownloader.py" line="459"/>
         <source>Downloading data</source>
         <translation>Baixando dados</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="500"/>
+        <location filename="../ibgeDataDownloader.py" line="501"/>
         <source>Extracting files</source>
         <translation>Extraindo arquivos</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="536"/>
+        <location filename="../ibgeDataDownloader.py" line="537"/>
         <source>Error</source>
         <translation>Erro</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="538"/>
+        <location filename="../ibgeDataDownloader.py" line="539"/>
         <source>Success</source>
         <translation>Sucesso</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="664"/>
+        <location filename="../ibgeDataDownloader.py" line="704"/>
         <source>Products Tree</source>
         <translation>Árvore de Produtos</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="664"/>
+        <location filename="../ibgeDataDownloader.py" line="704"/>
         <source>File size</source>
         <translation>Tamanho</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="664"/>
+        <location filename="../ibgeDataDownloader.py" line="704"/>
         <source>Last modified</source>
         <translation>Data de modificação</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="773"/>
+        <location filename="../ibgeDataDownloader.py" line="822"/>
         <source>Processing</source>
         <translation>Processando</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="773"/>
+        <location filename="../ibgeDataDownloader.py" line="822"/>
         <source>Working on selected data...</source>
         <translation>Trabalhando nos dados selecionados...</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="776"/>
+        <location filename="../ibgeDataDownloader.py" line="825"/>
         <source>Processing selected data.</source>
         <translation>Processando dados selecionados.</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="602"/>
-        <source>{} Product(s) selected</source>
-        <translation>{} Produto(s) selecionado(s)</translation>
+        <location filename="../ibgeDataDownloader.py" line="626"/>
+        <source>{p} Product(s) selected</source>
+        <translation type="obsolete">{p} Produto(s) selecionado(s)</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="711"/>
+        <location filename="../ibgeDataDownloader.py" line="751"/>
         <source>0 Product(s) selected</source>
         <translation>0 Produto(s) selecionado(s)</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="530"/>
+        <location filename="../ibgeDataDownloader.py" line="531"/>
         <source>Canceled</source>
         <translation>Cancelado</translation>
+    </message>
+    <message>
+        <location filename="../ibgeDataDownloader.py" line="530"/>
+        <source>canceled</source>
+        <translation>cancelado</translation>
+    </message>
+    <message>
+        <location filename="../ibgeDataDownloader.py" line="633"/>
+        <source>Product(s) selected</source>
+        <translation>Produto(s) selecionado(s)</translation>
     </message>
 </context>
 <context>
@@ -97,34 +107,49 @@
         <translation>Baixar dados do IBGE</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader_dialog_base.ui" line="42"/>
+        <location filename="../ibgeDataDownloader_dialog_base.ui" line="90"/>
         <source>Output directory:</source>
         <translation>Diretório de saída:</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader_dialog_base.ui" line="116"/>
+        <location filename="../ibgeDataDownloader_dialog_base.ui" line="36"/>
         <source>Extract files</source>
         <translation>Descompactar arquivos</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader_dialog_base.ui" line="32"/>
+        <location filename="../ibgeDataDownloader_dialog_base.ui" line="62"/>
         <source>IBGE Data Downloader</source>
         <translation>Baixador de dados do IBGE</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader_dialog_base.ui" line="102"/>
+        <location filename="../ibgeDataDownloader_dialog_base.ui" line="81"/>
         <source>...</source>
         <translation>...</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader_dialog_base.ui" line="123"/>
+        <location filename="../ibgeDataDownloader_dialog_base.ui" line="112"/>
         <source>0 Product(s) selected</source>
         <translation>0 Produto(s) selecionado(s)</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader_dialog_base.ui" line="136"/>
+        <location filename="../ibgeDataDownloader_dialog_base.ui" line="125"/>
         <source>Uncheck all</source>
         <translation>Desmarcar tudo</translation>
+    </message>
+    <message>
+        <location filename="../ibgeDataDownloader_dialog_base.ui" line="43"/>
+        <source>Load layers (if possible)</source>
+        <translation>Carregar camadas (se possível)</translation>
+    </message>
+    <message>
+        <location filename="../ibgeDataDownloader_dialog_base.ui" line="138"/>
+        <source>Geoscientific</source>
+        <translation>Geocientíficos</translation>
+    </message>
+    <message>
+        <location filename="../ibgeDataDownloader_dialog_base.ui" line="179"/>
+        <source>Statistical</source>
+        <translation>Estatísticos</translation>
     </message>
 </context>
 <context>
