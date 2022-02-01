@@ -259,7 +259,7 @@
          </widget>
         </item>
         <item row="2" column="1" colspan="2">
-         <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="0,0,0,0,0,0">
+         <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="0,0,0,0,0,0,0,0">
           <property name="spacing">
            <number>6</number>
           </property>
@@ -283,9 +283,26 @@
            </spacer>
           </item>
           <item>
-           <widget class="QCheckBox" name="checkBox_SearchExact">
+           <widget class="QCheckBox" name="checkBox_SearchSelectedOnly">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="text">
-             <string>Exact match only</string>
+             <string>Search in selected only</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="Line" name="line_2">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="checkBox_SearchContains">
+            <property name="text">
+             <string>Contains</string>
             </property>
             <property name="checked">
              <bool>true</bool>

@@ -4,22 +4,22 @@
 <context>
     <name>IbgeDataDownloader</name>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="208"/>
+        <location filename="../ibgeDataDownloader.py" line="212"/>
         <source>&amp;Download data from IBGE</source>
         <translation>Baixar dados do IBGE</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="195"/>
+        <location filename="../ibgeDataDownloader.py" line="199"/>
         <source>IBGE Data Downloader</source>
         <translation>Baixador de dados do IBGE</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="261"/>
+        <location filename="../ibgeDataDownloader.py" line="265"/>
         <source>Output directory</source>
         <translation>Diretório de saída</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="217"/>
+        <location filename="../ibgeDataDownloader.py" line="221"/>
         <source>Processing. Please, wait...</source>
         <translation>Processando. Por favor, aguarde...</translation>
     </message>
@@ -29,47 +29,47 @@
         <translation type="obsolete">Baixando dados</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="254"/>
+        <location filename="../ibgeDataDownloader.py" line="258"/>
         <source>Extracting files</source>
         <translation>Extraindo arquivos</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="324"/>
+        <location filename="../ibgeDataDownloader.py" line="328"/>
         <source>Error</source>
         <translation>Erro</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="326"/>
+        <location filename="../ibgeDataDownloader.py" line="330"/>
         <source>Success</source>
         <translation>Sucesso</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="481"/>
+        <location filename="../ibgeDataDownloader.py" line="523"/>
         <source>Products Tree</source>
         <translation>Árvore de Produtos</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="481"/>
+        <location filename="../ibgeDataDownloader.py" line="523"/>
         <source>File size</source>
         <translation>Tamanho</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="481"/>
+        <location filename="../ibgeDataDownloader.py" line="523"/>
         <source>Last modified</source>
         <translation>Data de modificação</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="646"/>
+        <location filename="../ibgeDataDownloader.py" line="692"/>
         <source>Processing</source>
         <translation>Processando</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="646"/>
+        <location filename="../ibgeDataDownloader.py" line="692"/>
         <source>Working on selected data...</source>
         <translation>Trabalhando nos dados selecionados...</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="649"/>
+        <location filename="../ibgeDataDownloader.py" line="695"/>
         <source>Processing selected data.</source>
         <translation>Processando dados selecionados.</translation>
     </message>
@@ -79,41 +79,66 @@
         <translation type="obsolete">{p} Produto(s) selecionado(s)</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="528"/>
+        <location filename="../ibgeDataDownloader.py" line="570"/>
         <source>0 Product(s) selected</source>
         <translation>0 Produto(s) selecionado(s)</translation>
     </message>
     <message>
         <location filename="../ibgeDataDownloader.py" line="322"/>
         <source>Canceled</source>
-        <translation>Cancelado</translation>
+        <translation type="obsolete">Cancelado</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="321"/>
+        <location filename="../ibgeDataDownloader.py" line="325"/>
         <source>canceled</source>
         <translation>cancelado</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="400"/>
+        <location filename="../ibgeDataDownloader.py" line="435"/>
         <source>Product(s) selected</source>
         <translation>Produto(s) selecionado(s)</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="559"/>
+        <location filename="../ibgeDataDownloader.py" line="605"/>
         <source>Searching products with {} word.
 This may take several minutes...</source>
         <translation>Pesquisando produtos com a palavra {}.
 A pesquisa poderá demorar vários minutos...</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="562"/>
+        <location filename="../ibgeDataDownloader.py" line="608"/>
         <source>Searching</source>
         <translation>Pesquisando</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="562"/>
+        <location filename="../ibgeDataDownloader.py" line="608"/>
         <source>The search may take several minutes</source>
         <translation>A pesquisa poderá demorar vários minutos</translation>
+    </message>
+    <message>
+        <location filename="../ibgeDataDownloader.py" line="491"/>
+        <source>Warning</source>
+        <translation>Aviso</translation>
+    </message>
+    <message>
+        <location filename="../ibgeDataDownloader.py" line="333"/>
+        <source>Adding products to Products Tree. This may take several minutes...</source>
+        <translation>Adicionando produtos à Árvore de Produtos. Isso poderá demorar vários minutos...</translation>
+    </message>
+    <message>
+        <location filename="../ibgeDataDownloader.py" line="491"/>
+        <source>The expand operation of an item fails due to a server timeout.</source>
+        <translation>A operação de expandir um item falhou devido ao timeout do servidor.</translation>
+    </message>
+    <message>
+        <location filename="../ibgeDataDownloader.py" line="603"/>
+        <source>Searching data...</source>
+        <translation>Pesquisando dados...</translation>
+    </message>
+    <message>
+        <location filename="../ibgeDataDownloader.py" line="690"/>
+        <source>Downloading data...</source>
+        <translation>Baixando dados...</translation>
     </message>
 </context>
 <context>
@@ -159,12 +184,12 @@ A pesquisa poderá demorar vários minutos...</translation>
         <translation>Carregar camadas (se possível)</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader_dialog_base.ui" line="358"/>
+        <location filename="../ibgeDataDownloader_dialog_base.ui" line="375"/>
         <source>Geoscientific</source>
         <translation>Geocientíficos</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader_dialog_base.ui" line="368"/>
+        <location filename="../ibgeDataDownloader_dialog_base.ui" line="385"/>
         <source>Statistical</source>
         <translation>Estatísticos</translation>
     </message>
@@ -186,12 +211,22 @@ A pesquisa poderá demorar vários minutos...</translation>
     <message>
         <location filename="../ibgeDataDownloader_dialog_base.ui" line="288"/>
         <source>Exact match only</source>
-        <translation>Aderência exata</translation>
+        <translation type="obsolete">Aderência exata</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader_dialog_base.ui" line="308"/>
+        <location filename="../ibgeDataDownloader_dialog_base.ui" line="325"/>
         <source>Match score:</source>
         <translation>Nível de aderência:</translation>
+    </message>
+    <message>
+        <location filename="../ibgeDataDownloader_dialog_base.ui" line="291"/>
+        <source>Search in selected only</source>
+        <translation>Pesquisar apenas no selecionado</translation>
+    </message>
+    <message>
+        <location filename="../ibgeDataDownloader_dialog_base.ui" line="305"/>
+        <source>Contains</source>
+        <translation>Contém</translation>
     </message>
 </context>
 <context>
@@ -255,51 +290,71 @@ A pesquisa poderá demorar vários minutos...</translation>
 <context>
     <name>WorkerSearchManager</name>
     <message>
-        <location filename="../WorkerSearchManager.py" line="61"/>
+        <location filename="../WorkerSearchManager.py" line="62"/>
         <source>Error</source>
         <translation>Erro</translation>
     </message>
     <message>
-        <location filename="../WorkerSearchManager.py" line="61"/>
+        <location filename="../WorkerSearchManager.py" line="62"/>
         <source>Oops, something went wrong! Please, contact the developer by e-mail.</source>
         <translation>Oops, algo não saiu bem! Por favor, contate o desenvolvedor por e-mail.</translation>
     </message>
     <message>
-        <location filename="../WorkerSearchManager.py" line="63"/>
+        <location filename="../WorkerSearchManager.py" line="64"/>
         <source>Warning</source>
         <translation>Aviso</translation>
     </message>
     <message>
-        <location filename="../WorkerSearchManager.py" line="63"/>
+        <location filename="../WorkerSearchManager.py" line="64"/>
         <source>Process partially completed.</source>
         <translation>Processo parcialmente finalizado.</translation>
     </message>
     <message>
-        <location filename="../WorkerSearchManager.py" line="65"/>
+        <location filename="../WorkerSearchManager.py" line="66"/>
         <source>Success</source>
         <translation>Sucesso</translation>
     </message>
     <message>
-        <location filename="../WorkerSearchManager.py" line="65"/>
+        <location filename="../WorkerSearchManager.py" line="66"/>
         <source>Process completed.</source>
         <translation>Processo finalizado.</translation>
     </message>
     <message>
-        <location filename="../WorkerSearchManager.py" line="120"/>
+        <location filename="../WorkerSearchManager.py" line="152"/>
         <source>{} Product(s) found.
 The search may take several minutes...</source>
         <translation>{} Produto(s) encontrados.
 A pesquisa poderá levar vários minutos...</translation>
     </message>
     <message>
-        <location filename="../WorkerSearchManager.py" line="93"/>
+        <location filename="../WorkerSearchManager.py" line="104"/>
         <source>The process was canceled by the user.</source>
         <translation>O processo foi cancelado pelo usuário.</translation>
     </message>
     <message>
         <location filename="../WorkerSearchManager.py" line="126"/>
         <source>Search completed with {fails} fails.</source>
-        <translation>Pesquisa finalizada com {fails} falhas.</translation>
+        <translation type="obsolete">Pesquisa finalizada com {fails} falhas.</translation>
+    </message>
+    <message>
+        <location filename="../WorkerSearchManager.py" line="84"/>
+        <source>The search fails due to a server timeout.</source>
+        <translation>A pesquisa falhou devido a um timeout do servidor.</translation>
+    </message>
+    <message>
+        <location filename="../WorkerSearchManager.py" line="140"/>
+        <source>Timeout error.</source>
+        <translation>Erro de timeout.</translation>
+    </message>
+    <message>
+        <location filename="../WorkerSearchManager.py" line="142"/>
+        <source>Not implemented error.</source>
+        <translation>Erro não implementado.</translation>
+    </message>
+    <message>
+        <location filename="../WorkerSearchManager.py" line="161"/>
+        <source>Search completed with {match} product(s) found and {fails} fails.</source>
+        <translation>Pesquisa finalizada com {match} produto(s) encontrado(s) e {fails} falha(s).</translation>
     </message>
 </context>
 </TS>

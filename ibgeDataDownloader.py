@@ -28,7 +28,8 @@ from qgis.PyQt.QtWidgets import (
                                  QDialogButtonBox, QHeaderView, QAbstractItemView
                                 )
 from qgis.core import Qgis, QgsProject, QgsApplication, QgsVectorLayer
-import os, unicodedata, urllib, zipfile, tarfile, http, http.client, time
+import os, unicodedata, urllib, zipfile, tarfile, http, http.client, time, socket
+
 # Initialize Qt resources from file resources.py
 from .resources import *
 # Import the code for the dialog
@@ -85,8 +86,9 @@ class IbgeDataDownloader:
                         self.qgisProgressButton = i
                         break
 
-        # Avoid headers limit error
-        http.client._MAXHEADERS = 10000
+        # Avoid headers and maxlines limit error
+        http.client._MAXHEADERS = 999999999999999999
+        http.client._MAXLINE = 999999999999999999
 
         # Saving references
         self.msgBar = self.iface.messageBar()
@@ -96,6 +98,7 @@ class IbgeDataDownloader:
         self.statbaseUrl = 'https://ftp.ibge.gov.br/'
         self.itemsExpanded = []
         self.selectedProductsUrl = []
+        self.selectedSearch = ''
         self.dirSaida = ''
 
     # noinspection PyMethodMayBeStatic
@@ -282,7 +285,7 @@ class IbgeDataDownloader:
         if self.pluginResult[4] == 'download':
             # If the method callback came from WorkerDownloadManager
             if self.tr('canceled') in self.pluginResult[0]:
-                msgType = self.tr('Canceled')
+                msgType = self.tr('Warning')
                 # Delete remaining data
                 fileName = os.path.basename(self.pluginResult[3])
                 if os.path.isfile(os.path.join(self.dirSaida, fileName)):
@@ -318,7 +321,7 @@ class IbgeDataDownloader:
         else:
             # If the method callback came from WorkerSearchManager
             if self.tr('canceled') in self.pluginResult[0]:
-                msgType = self.tr('Canceled')
+                msgType = self.tr('Warning')
             elif self.pluginResult[1] == Qgis.Critical:
                 msgType = self.tr('Error')
             else:
@@ -330,6 +333,7 @@ class IbgeDataDownloader:
                 self.dlgBar.show()
                 for i in self.pluginResult[3]:
                     dirs =  i[0].split('/')[2:]
+                    #print(i, dirs)
                     if 'geo' in dirs[0]:
                         self.dlg.tabWidget.setCurrentIndex(0)
                         treeView = self.dlg.treeView_Geo
@@ -338,13 +342,16 @@ class IbgeDataDownloader:
                         self.dlg.tabWidget.setCurrentIndex(1)
                         treeView = self.dlg.treeView_Stat
                         model = treeView.model()
-                    for n, d in enumerate(dirs):
-                        items = model.findItems(d, Qt.MatchExactly | Qt.MatchRecursive)
-                        for item in items:
-                            print(item.text())
-                            if item.text() == d:
-                                modelIndex = model.indexFromItem(item)
-                                treeView.expand(modelIndex)
+                    for d in dirs:
+                        if d != '':
+                            items = model.findItems(d, Qt.MatchExactly | Qt.MatchRecursive)
+                            for item in items:
+                                #print(d, item.text(), os.path.splitext(item.text()))
+                                if os.path.splitext(item.text())[1] in ('', '.br'):
+                                    modelIndex = model.indexFromItem(item)
+                                    treeView.expand(modelIndex)
+                self.dlgBar.setClose(True)
+                self.dlgBar.close()
 
         self.msgBar.clearWidgets()
         if self.pluginResult[2] != []:
@@ -401,6 +408,14 @@ class IbgeDataDownloader:
                 parents.insert(0, parent.data())
                 parent = parent.parent()
             productUrl = '{base}{subPath}'.format(base=baseUrl, subPath='/'.join(parents))
+
+            # Define selected search
+            self.selectedSearch = productUrl if os.path.splitext(productUrl)[1] == '' else ''
+            if self.selectedSearch != '':
+                self.dlg.checkBox_SearchSelectedOnly.setEnabled(True)
+            else:
+                self.dlg.checkBox_SearchSelectedOnly.setChecked(False)
+                self.dlg.checkBox_SearchSelectedOnly.setEnabled(False)
 
             # Add or remove from products variable
             model = modelIndex.model()
@@ -461,11 +476,18 @@ class IbgeDataDownloader:
             # Adds item's children
             #print('/'.join(parents))
             url = '{base}{subPath}/'.format(base=baseUrl, subPath='/'.join(parents))
-            print(url)
+            #print(url)
             self.htmlParser.resetParent()
             self.htmlParser.resetChildren()
             self.htmlParser.resetChild()
-            self.htmlParser.feed(http.client.parse_headers(urllib.request.urlopen(url)).as_string())
+            # Set timeout for requests
+            socket.setdefaulttimeout(15)
+            try:
+                self.htmlParser.feed(http.client.parse_headers(urllib.request.urlopen(url)).as_string())
+            except socket.timeout as e:
+                self.msgBar.pushMessage(self.tr('Warning'), self.tr('The expand operation of an item fails due to a server timeout.'), e, Qgis.Warning, duration=0)
+            # Set timeout for requests to default
+            socket.setdefaulttimeout(None)
             children = self.htmlParser.getChildren()
             
             # Add children to the tree
@@ -567,8 +589,12 @@ class IbgeDataDownloader:
         # Search params
         root = self.geobaseUrl if self.dlg.radioButton_SearchGeo.isChecked() else self.statbaseUrl
         text = self.dlg.lineEdit_SearchWord.text()
-        matchExact = self.dlg.checkBox_SearchExact.isChecked()
+        matchContains = self.dlg.checkBox_SearchContains.isChecked()
         matchScore = self.dlg.doubleSpinBox_MatchValue.value()
+
+        # Collapsing all item in the three
+        treeView = self.dlg.treeView_Geo if 'geo' in root else self.dlg.treeView_Stat
+        treeView.collapseAll()
 
         # Preparing product search
         self.dlgBar, self.progressBar = self._progressDialog(0, self.tr(u'Searching data...'))
@@ -580,9 +606,9 @@ class IbgeDataDownloader:
         self.threadTask = WorkerSearchManager(
                                               self.iface,
                                               taskDesc,
-                                              root,
+                                              root if not self.dlg.checkBox_SearchSelectedOnly.isChecked() else self.selectedSearch,
                                               text,
-                                              matchExact,
+                                              matchContains,
                                               matchScore
                                              )
         self.threadTask.begun.connect(lambda: self.setProgressText(taskDesc))
@@ -617,7 +643,7 @@ class IbgeDataDownloader:
         self.dlg.treeView_Stat.clicked.connect(self.treeViewClicked)
         self.dlg.treeView_Stat.expanded.connect(self.treeViewExpanded)
         self.dlg.pushButton_UncheckAll.clicked.connect(self.uncheckAll)
-        self.dlg.checkBox_SearchExact.stateChanged.connect(self.searchExactStateChanged)
+        self.dlg.checkBox_SearchContains.stateChanged.connect(self.searchExactStateChanged)
         self.dlg.lineEdit_SearchWord.textChanged.connect(self.searchWordTextChanged)
         self.dlg.pushButton_Search.clicked.connect(self.searchClicked)
 
