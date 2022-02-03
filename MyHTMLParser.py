@@ -32,7 +32,7 @@ class MyHTMLParser(HTMLParser):
 
         # Attribute that receive parent tree
         self.parent = None
-        # Attribute that receive childs tree
+        # Attribute that receive children tree
         self.children = []
         # Attribute that receives child information
         self.child = []

@@ -25,7 +25,8 @@ from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication, Qt, QMode
 from qgis.PyQt.QtGui import QIcon, QStandardItemModel, QStandardItem
 from qgis.PyQt.QtWidgets import (
                                  QAction, QFileDialog, QProgressBar, QToolButton,
-                                 QDialogButtonBox, QHeaderView, QAbstractItemView
+                                 QDialogButtonBox, QHeaderView, QAbstractItemView,
+                                 QPushButton
                                 )
 from qgis.core import Qgis, QgsProject, QgsApplication, QgsVectorLayer
 import os, unicodedata, urllib, zipfile, tarfile, http, http.client, time, socket
@@ -226,7 +227,13 @@ class IbgeDataDownloader:
         dialog.setMinimumWidth(300)
         dialog.setModal(True)
         dialog.setWindowFlag(Qt.WindowCloseButtonHint, False)
+        dialog.setAutoClose(False)
+        dialog.setAutoReset(False)
         dialog.canceled.connect(self.canceledProgressDialog)
+        for i in dialog.children():
+            if type(i) == QPushButton:
+                self.dlgBarCancelButton = i
+                break
         return dialog, progressBar
 
     def setMaximumProgressBar(self, maxN):
@@ -241,7 +248,11 @@ class IbgeDataDownloader:
     def canceledProgressDialog(self):
         """Cancels the task."""
 
-        self.threadTask.cancel()
+        self.dlgBarCancelButton.setEnabled(False)
+        self.dlgBar.setLabelText(self.tr('{}\nCanceling...').format(self.dlgBar.labelText().split('\n')[0]))
+        self.dlgBar.show()
+        if not self.threadTask.isCanceled():
+            self.threadTask.cancel()
 
     def setProgressValue(self, val):
         """Defines value of progress bar."""
@@ -299,25 +310,27 @@ class IbgeDataDownloader:
                     for i in self.pluginResult[3]:
                         fileName = os.path.basename(i[1])
                         file = os.path.join(self.dirSaida, fileName)
+                        files = None
                         if fileName.endswith('.zip'):
                             files = zipfile.ZipFile(file).namelist()
                         elif fileName.endswith('.tar'):
                             files = tarfile.TarFile(file).getnames()
-                        for j in files:
-                            if j.endswith('.shp'):
-                                l = QgsVectorLayer(os.path.join(self.dirSaida, j), j, 'ogr')
-                                # Extent enlarged of 1/25
-                                extent = l.extent()
-                                xMin = extent.xMinimum()
-                                yMin = extent.yMinimum()
-                                xMax = extent.xMaximum()
-                                yMax = extent.yMaximum()
-                                diagonal = ((xMax - xMin) ** 2 + (yMax - yMin) ** 2) ** 0.5
-                                buffer = 0.04 * diagonal  
-                                extent = extent.buffered(buffer)
-                                # Add layer
-                                QgsProject.instance().addMapLayer(l)
-                                self.iface.mapCanvas().setExtent(extent)
+                        if files:
+                            for j in files:
+                                if j.endswith('.shp'):
+                                    l = QgsVectorLayer(os.path.join(self.dirSaida, j), j, 'ogr')
+                                    # Extent enlarged of 1/25
+                                    extent = l.extent()
+                                    xMin = extent.xMinimum()
+                                    yMin = extent.yMinimum()
+                                    xMax = extent.xMaximum()
+                                    yMax = extent.yMaximum()
+                                    diagonal = ((xMax - xMin) ** 2 + (yMax - yMin) ** 2) ** 0.5
+                                    buffer = 0.04 * diagonal  
+                                    extent = extent.buffered(buffer)
+                                    # Add layer
+                                    QgsProject.instance().addMapLayer(l)
+                                    self.iface.mapCanvas().setExtent(extent)
         else:
             # If the method callback came from WorkerSearchManager
             if self.tr('canceled') in self.pluginResult[0]:
@@ -576,12 +589,29 @@ class IbgeDataDownloader:
         self._checkOkButton()
 
     def searchWordTextChanged(self, text):
-        """Enables or disables search button if text respects standard features"""
+        """Standardizes text and enables or disables search button if text respects standard features"""
 
+        # Starndardize text
+        text = text.replace(' ', '_')
+        self.dlg.lineEdit_SearchWord.setText(text)
+
+        # Check if text respect standard structure
         if not any(c in text for c in (' ', ',', '.', ';', '?', 'zip', 'tar', 'shp', 'xls', 'ods', 'pdf')) and text != '':
             self.dlg.pushButton_Search.setEnabled(True)
         else:
             self.dlg.pushButton_Search.setEnabled(False)
+
+    '''
+    def treeViewSelectionChanged(self, selected, deselected):
+
+        if self.dlg.tabWidget.currentIndex() == 0:
+            self.selectedSearch = selected.indexes()[0]
+        else:
+            treeView = self.dlg.treeView_Stat
+        item = treeview.model().itemFromIndex(selected.indexes()[0])
+        if item.column() > 0:
+    '''
+
 
     def searchClicked(self):
         """Search for products with typed word"""
@@ -632,9 +662,13 @@ class IbgeDataDownloader:
         self.dlg.treeView_Geo.header().setSectionResizeMode(QHeaderView.ResizeToContents)
         self.dlg.treeView_Stat.header().setSectionResizeMode(QHeaderView.ResizeToContents)
 
-        # Sets selection mode
-        self.dlg.treeView_Geo.setSelectionMode(QAbstractItemView.NoSelection)
-        self.dlg.treeView_Stat.setSelectionMode(QAbstractItemView.NoSelection)
+        # Set selection mode
+        self.dlg.treeView_Geo.setSelectionMode(QAbstractItemView.SingleSelection)
+        self.dlg.treeView_Stat.setSelectionMode(QAbstractItemView.SingleSelection)
+
+        # Create selection models
+        #self.geoSelectionModel = QItemSelectionModel(self.dlg.treeView_Geo.model())
+        #self.statSelectionModel = QItemSelectionModel(self.dlg.treeView_Stat.model())
 
         # Signals
         self.dlg.pushButton_Dir.clicked.connect(self.dlgDirSaida)
@@ -646,6 +680,7 @@ class IbgeDataDownloader:
         self.dlg.checkBox_SearchContains.stateChanged.connect(self.searchExactStateChanged)
         self.dlg.lineEdit_SearchWord.textChanged.connect(self.searchWordTextChanged)
         self.dlg.pushButton_Search.clicked.connect(self.searchClicked)
+        #self.geoSelectionModel.selectionChanged(self.treeViewSelectionChanged)
 
         # Populate tree for product selection
         #url = '{}organizacao_do_territorio/'.format(self.geobaseUrl)
