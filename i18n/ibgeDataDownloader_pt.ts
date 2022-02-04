@@ -4,22 +4,22 @@
 <context>
     <name>IbgeDataDownloader</name>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="213"/>
+        <location filename="../ibgeDataDownloader.py" line="218"/>
         <source>&amp;Download data from IBGE</source>
         <translation>&amp;Baixar dados do IBGE</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="200"/>
+        <location filename="../ibgeDataDownloader.py" line="205"/>
         <source>IBGE Data Downloader</source>
         <translation>Baixador de dados do IBGE</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="276"/>
+        <location filename="../ibgeDataDownloader.py" line="281"/>
         <source>Output directory</source>
         <translation>Diretório de saída</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="222"/>
+        <location filename="../ibgeDataDownloader.py" line="227"/>
         <source>Processing. Please, wait...</source>
         <translation>Processando. Por favor, aguarde...</translation>
     </message>
@@ -29,47 +29,47 @@
         <translation type="obsolete">Baixando dados</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="269"/>
+        <location filename="../ibgeDataDownloader.py" line="274"/>
         <source>Extracting files</source>
         <translation>Extraindo arquivos</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="347"/>
+        <location filename="../ibgeDataDownloader.py" line="346"/>
         <source>Error</source>
         <translation>Erro</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="349"/>
+        <location filename="../ibgeDataDownloader.py" line="348"/>
         <source>Success</source>
         <translation>Sucesso</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="542"/>
+        <location filename="../ibgeDataDownloader.py" line="580"/>
         <source>Products Tree</source>
         <translation>Árvore de Produtos</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="542"/>
+        <location filename="../ibgeDataDownloader.py" line="580"/>
         <source>File size</source>
         <translation>Tamanho</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="542"/>
+        <location filename="../ibgeDataDownloader.py" line="580"/>
         <source>Last modified</source>
         <translation>Data de modificação</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="716"/>
+        <location filename="../ibgeDataDownloader.py" line="811"/>
         <source>Processing</source>
         <translation>Processando</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="716"/>
+        <location filename="../ibgeDataDownloader.py" line="811"/>
         <source>Working on selected data...</source>
         <translation>Trabalhando nos dados selecionados...</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="719"/>
+        <location filename="../ibgeDataDownloader.py" line="814"/>
         <source>Processing selected data.</source>
         <translation>Processando dados selecionados.</translation>
     </message>
@@ -79,7 +79,7 @@
         <translation type="obsolete">{p} Produto(s) selecionado(s)</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="589"/>
+        <location filename="../ibgeDataDownloader.py" line="625"/>
         <source>0 Product(s) selected</source>
         <translation>0 Produto(s) selecionado(s)</translation>
     </message>
@@ -89,12 +89,12 @@
         <translation type="obsolete">Cancelado</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="344"/>
+        <location filename="../ibgeDataDownloader.py" line="343"/>
         <source>canceled</source>
         <translation>cancelado</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="454"/>
+        <location filename="../ibgeDataDownloader.py" line="505"/>
         <source>Product(s) selected</source>
         <translation>Produto(s) selecionado(s)</translation>
     </message>
@@ -102,50 +102,67 @@
         <location filename="../ibgeDataDownloader.py" line="629"/>
         <source>Searching products with {} word.
 This may take several minutes...</source>
-        <translation>Pesquisando produtos com a palavra {}.
+        <translation type="obsolete">Pesquisando produtos com a palavra {}.
 A pesquisa poderá demorar vários minutos...</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="632"/>
+        <location filename="../ibgeDataDownloader.py" line="715"/>
         <source>Searching</source>
         <translation>Pesquisando</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="632"/>
+        <location filename="../ibgeDataDownloader.py" line="715"/>
         <source>The search may take several minutes</source>
         <translation>A pesquisa poderá demorar vários minutos</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="510"/>
+        <location filename="../ibgeDataDownloader.py" line="548"/>
         <source>Warning</source>
         <translation>Aviso</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="352"/>
+        <location filename="../ibgeDataDownloader.py" line="351"/>
         <source>Adding products to Products Tree. This may take several minutes...</source>
         <translation>Adicionando produtos à Árvore de Produtos. Isso poderá demorar vários minutos...</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="510"/>
+        <location filename="../ibgeDataDownloader.py" line="548"/>
         <source>The expand operation of an item fails due to a server timeout.</source>
         <translation>A operação de expandir um item falhou devido ao timeout do servidor.</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="627"/>
+        <location filename="../ibgeDataDownloader.py" line="710"/>
         <source>Searching data...</source>
         <translation>Pesquisando dados...</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="714"/>
+        <location filename="../ibgeDataDownloader.py" line="809"/>
         <source>Downloading data...</source>
         <translation>Baixando dados...</translation>
     </message>
     <message>
-        <location filename="../ibgeDataDownloader.py" line="254"/>
+        <location filename="../ibgeDataDownloader.py" line="259"/>
         <source>{}
 Canceling...</source>
         <translation>{}
 Cancelando...</translation>
+    </message>
+    <message>
+        <location filename="../ibgeDataDownloader.py" line="712"/>
+        <source>Searching products with &quot;{}&quot; word.
+This may take several minutes...</source>
+        <translation>Pesquisando produtos com a palavra &quot;{}&quot;.
+Isso poderá demorar vários minutos...</translation>
+    </message>
+    <message>
+        <location filename="../ibgeDataDownloader.py" line="779"/>
+        <source>Cancel</source>
+        <translation>Cancelar</translation>
+    </message>
+    <message>
+        <location filename="../ibgeDataDownloader.py" line="780"/>
+        <source>Help</source>
+        <translation>Ajuda</translation>
     </message>
 </context>
 <context>

@@ -19,7 +19,7 @@
 from qgis.PyQt.QtCore import pyqtSignal, QCoreApplication
 from qgis.PyQt.QtGui import QIcon
 from qgis.core import QgsTask, Qgis, QgsProject
-import os, urllib, zipfile, tarfile, http, http.client, time, socket
+import urllib, http, http.client, time, socket
 from .MyHTMLParser import MyHTMLParser
 
 class WorkerSearchManager(QgsTask):
