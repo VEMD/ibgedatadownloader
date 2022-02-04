@@ -21,6 +21,7 @@
  *                                                                         *
  ***************************************************************************/
 """
+from cgitb import text
 from qgis.PyQt.QtCore import (
                               QSettings, QTranslator, QCoreApplication,
                               Qt, QModelIndex
@@ -42,6 +43,7 @@ from .MyHTMLParser import MyHTMLParser
 from .MyProgressDialog import MyProgressDialog
 from .WorkerDownloadManager import WorkerDownloadManager
 from .WorkerSearchManager import WorkerSearchManager
+from .HelpDialog import HelpDialog
 
 class IbgeDataDownloader:
     """QGIS Plugin Implementation."""
@@ -97,6 +99,7 @@ class IbgeDataDownloader:
         # Saving references
         self.msgBar = self.iface.messageBar()
         self.taskManager = QgsApplication.taskManager()
+        self.settings = QSettings()
         self.htmlParser = MyHTMLParser()
         self.geobaseUrl = 'https://geoftp.ibge.gov.br/'
         self.statbaseUrl = 'https://ftp.ibge.gov.br/'
@@ -726,21 +729,17 @@ class IbgeDataDownloader:
         # Hide QGIS native progress button
         self.qgisProgressButton.hide()
 
+    def helpBrowserAnchorClicked(self, link):
+        """Change page of help dialog when an anchor is clicked"""
+
+        htmlPage = open(os.path.join(self.plugin_dir, 'pluginHelp', link.toString()))
+        self.helpBrowser.setHtml(htmlPage.read())
+        htmlPage.close()
+
     def buttonHelpClicked(self):
         """Opens help dialog"""
 
-        helpDialog = QDialog(self.dlg)
-        helpDialog.setModal(True)
-        helpDialog.setWindowTitle(self.tr('Help of IBGE Data Downloader'))
-        grid = QGridLayout(helpDialog)
-        grid.setObjectName('mainGridLayout')
-        htmlHome = open(os.path.join(self.plugin_dir, 'pluginHelp', 'inicio.html'))
-        textBrowser = QTextBrowser()
-        textBrowser.setHtml(htmlHome.read())
-        grid.addWidget(textBrowser)
-
-        htmlHome.close()
-        helpDialog.show()
+        self.helpDialog.show()
 
     def _configDialogs(self):
         """Configures dialog and connects signals/slots."""
@@ -849,13 +848,13 @@ class IbgeDataDownloader:
         if self.firstStart == True:
             self.firstStart = False
             self.dlg = IbgeDataDownloaderDialog()
+            self.helpDialog = HelpDialog(self.dlg)
             self._configDialogs()
 
         # show the dialog
         self.dlg.show()
         # Run the dialog event loop
         result = self.dlg.exec_()
-        print(result)
         # See if OK was pressed
         if result:
             self._execute()
