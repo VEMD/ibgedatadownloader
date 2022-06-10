@@ -1,2 +1,2 @@
 # ibgedatadownloader
-QGIS plugin to download geographic information from IBGE.
+QGIS plugin to download geographic and statistical data from IBGE.
