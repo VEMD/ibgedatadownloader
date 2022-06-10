@@ -16,27 +16,26 @@
  *                                                                         *
  ***************************************************************************/
 """
-from qgis.PyQt.QtCore import pyqtSignal, QCoreApplication
+from qgis.PyQt.QtCore import pyqtSignal
 from qgis.PyQt.QtGui import QIcon
 from qgis.core import QgsTask, Qgis, QgsProject
 import os, urllib, zipfile, tarfile
 
+
 class WorkerDownloadManager(QgsTask):
-    ###########################################
-    # DOWNLOADS AND EXTRACTS A COMPACTED FILE #
-    ###########################################
+    """DOWNLOADS AND EXTRACTS A COMPACTED FILE"""
 
     # Signals emitted
-    textProgress = pyqtSignal(str) # text for progress dialog
-    processResult = pyqtSignal(list) # process result
-    barMax = pyqtSignal(float) # max number of progress bar
+    textProgress = pyqtSignal(str)  # text for progress dialog
+    processResult = pyqtSignal(list)  # process result
+    barMax = pyqtSignal(float)  # max number of progress bar
 
     def __init__(self, iface, desc, listUrls, dirPad, listUnzipOptions):
         """Constructor."""
 
         # Mother class constructor QgsTask (subclass)
         super(WorkerDownloadManager, self).__init__(desc, flags=QgsTask.CanCancel)
-        
+
         # Saving references
         self.iface = iface
         self.project = QgsProject.instance()
@@ -88,14 +87,14 @@ class WorkerDownloadManager(QgsTask):
                 self.exception.append(n, url, msg, e)
                 fails += 1
                 continue
-            
+
             # Creates directory for product, if it doesn't exists
             if not os.path.isdir(self.dirPad):
                 os.makedirs(self.dirPad)
-            
+
             # Downloading file
             f = open(outFile, 'wb')
-            msg = self.tr('{n}/{total} - Downloading {file}...').format(n=n+1, total=self.totalUrls, file=fileName)
+            msg = self.tr('{n}/{total} - Downloading {file}...').format(n=n + 1, total=self.totalUrls, file=fileName)
             self.textProgress.emit(msg)
             #print "Downloading: %s Bytes: %s" % (outFile, file_size)
             file_size_dl = 0
@@ -111,7 +110,7 @@ class WorkerDownloadManager(QgsTask):
                     break
                 file_size_dl += len(buffer)
                 f.write(buffer)
-                self.setProgress(file_size_dl*100/fileSize)
+                self.setProgress(file_size_dl * 100 / fileSize)
                 #status = r"%10d  [%3.2f%%]" % (file_size_dl, file_size_dl * 100. / file_size)
                 #status = status + chr(8)*(len(status)+1)
                 #print status,
@@ -119,7 +118,7 @@ class WorkerDownloadManager(QgsTask):
 
             # Extracting downloaded files
             if self.unzip and any(fileName.endswith(ext) for ext in ('.zip', '.tar')):
-                msg = self.tr(u'{n}/{total} - Extracting files from {file}...').format(n=n+1, total=self.totalUrls, file=fileName)
+                msg = self.tr(u'{n}/{total} - Extracting files from {file}...').format(n=n + 1, total=self.totalUrls, file=fileName)
                 self.textProgress.emit(msg)
                 if fileName.endswith('zip'):
                     # Extract zip file

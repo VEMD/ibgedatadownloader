@@ -20,10 +20,9 @@ from qgis.PyQt.QtCore import QSettings
 from qgis.PyQt.QtWidgets import QDialog, QTextBrowser, QGridLayout
 import os
 
+
 class HelpDialog(QDialog):
-    #######################################
-    # CREATES AND PREPARE THE HELP DIALOG #
-    #######################################
+    """CREATES AND PREPARE THE HELP DIALOG"""
 
     def __init__(self, parent):
         """Constructor."""
@@ -33,6 +32,9 @@ class HelpDialog(QDialog):
 
         # initialize file directory
         self.fileDir = os.path.dirname(__file__)
+
+        # Keep reference of the sotfware language
+        self.locale = QSettings().value('locale/userLocale')[0:2]
 
         # Configuring window
         self.setWindowTitle(self.tr('Help of IBGE Data Downloader'))
@@ -44,25 +46,21 @@ class HelpDialog(QDialog):
 
         # Create the browser
         self.helpBrowser = QTextBrowser()
-        
+
         # Connect browser's signal to slot
         self.helpBrowser.anchorClicked.connect(self.helpBrowserAnchorClicked)
-        
+
         # Add browser to the window
         grid.addWidget(self.helpBrowser)
 
-        # Check software language and load corresponding file
-        locale = QSettings().value('locale/userLocale')
-        if locale == 'pt_BR':
-            htmlPage = open(os.path.join(self.fileDir, 'pluginHelp', 'inicio.html'))
-        else:
-            htmlPage = open(os.path.join(self.fileDir, 'pluginHelp', 'home.html'))
+        # Load corresponding file
+        htmlPage = open(os.path.join(self.fileDir, 'pluginHelp', self.locale, 'home.html'))
         self.helpBrowser.setHtml(htmlPage.read())
         htmlPage.close()
 
     def helpBrowserAnchorClicked(self, link):
         """Change page of help dialog when an anchor is clicked"""
 
-        htmlPage = open(os.path.join(self.fileDir, 'pluginHelp', link.toString()))
+        htmlPage = open(os.path.join(self.fileDir, 'pluginHelp', self.locale, link.toString()))
         self.helpBrowser.setHtml(htmlPage.read())
         htmlPage.close()

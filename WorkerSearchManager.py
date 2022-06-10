@@ -16,28 +16,27 @@
  *                                                                         *
  ***************************************************************************/
 """
-from qgis.PyQt.QtCore import pyqtSignal, QCoreApplication
+from qgis.PyQt.QtCore import pyqtSignal
 from qgis.PyQt.QtGui import QIcon
 from qgis.core import QgsTask, Qgis, QgsProject
 import urllib, http, http.client, time, socket
 from .MyHTMLParser import MyHTMLParser
 
+
 class WorkerSearchManager(QgsTask):
-    ######################################
-    # SEARCHES IN A FTP'S URL FOR A WORD #
-    ######################################
+    """SEARCHES IN A FTP'S URL FOR A WORD"""
 
     # Signals emitted
-    textProgress = pyqtSignal(str) # text for progress dialog
-    processResult = pyqtSignal(list) # process result
-    barMax = pyqtSignal(float) # max number of progress bar
+    textProgress = pyqtSignal(str)  # text for progress dialog
+    processResult = pyqtSignal(list)  # process result
+    barMax = pyqtSignal(float)  # max number of progress bar
 
     def __init__(self, iface, desc, rootFtp, txtSearch, matchContains, matchScore):
         """Constructor."""
 
         # Mother class constructor QgsTask (subclass)
         super(WorkerSearchManager, self).__init__(desc, flags=QgsTask.CanCancel)
-        
+
         # Saving references
         self.iface = iface
         self.project = QgsProject.instance()
@@ -116,7 +115,7 @@ class WorkerSearchManager(QgsTask):
                         # Set timeout for requests to default
                         socket.setdefaulttimeout(None)
                         #print('feed1 ok', sUrl[0])
-                    except (urllib.error.HTTPError, socket.timeout, NotImplementedError) as e:
+                    except (urllib.error.HTTPError, socket.timeout, NotImplementedError):
                         #print(e.code, e.reason, e.headers)
                         #print('tentando novamente em 5 segundos...')
                         # Set timeout for requests to default
@@ -152,7 +151,7 @@ class WorkerSearchManager(QgsTask):
                                 self.textProgress.emit(self.tr('{} Product(s) found.\nThe search may take several minutes...').format(len(matchUrl)))
                     try:
                         searchUrls.remove(sUrl)
-                    except:
+                    except ValueError:
                         pass
                 #print('end while for', len(searchUrls))
                 if len(searchUrls) == 0:

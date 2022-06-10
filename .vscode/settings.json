@@ -1,0 +1,54 @@
+{
+    "python.languageServer": "Jedi", // PyLancer just came out recently, but i havent tested it out with this configuration
+    // Linter
+    "python.linting.enabled": true,
+    
+    "python.linting.flake8Enabled": true,
+    "python.linting.flake8Args": [
+        "--ignore=E24,E265,E501,W504,W1401,E202,E401",
+        "--verbose"
+    ],
+    
+
+    // Wait.. this isen't a python interpreter..
+    "python.defaultInterpreterPath": "C:/Program Files/QGIS 3.16/bin/python-qgis-ltr.bat",
+
+    /*
+    "python.linting.pylintEnabled": true,
+    // Some arguments to make pylint behave nicely with PyQt5 and qgis bindinds
+    "python.linting.pylintArgs": [
+        "--extension-pkg-whitelist=PyQt5,qgis,db_manager",
+        "--disable=all",
+        "--enable=F,E,unreachable,duplicate-key,unnecessary-semicolon,global-variable-not-assigned,unused-variable,binary-op-exception,bad-format-string,anomalous-backslash-in-string,bad-open-mode"
+    ],
+    */
+    
+
+    // Replicate the QGIS environment on the terminal
+    // {{INSERT_YOUR_USER}} or any path really should be replaced with your own installation path
+    "terminal.integrated.env.windows": {
+        // Path
+        "PATH": "C:\\Program Files\\Git\\cmd;C:\\Program Files\\QGIS 3.16\\apps\\qgis-ltr\\bin;C:\\Program Files\\QGIS 3.16\\apps\\Python37;C:\\Program Files\\QGIS 3.16\\apps\\Python37\\Scripts;C:\\Program Files\\QGIS 3.16\\apps\\qt5\\bin;C:\\Program Files\\QGIS 3.16\\apps\\Python37\\Scripts;C:\\Program Files\\QGIS 3.16\\bin;C:\\WINDOWS\\system32;C:\\WINDOWS;C:\\WINDOWS\\system32\\WBem;C:\\Program Files\\QGIS 3.16\\apps\\Python37\\Lib\\site-packages\\pywin32_system32;C:\\Program Files\\QGIS 3.16\\apps\\Python37\\Lib\\site-packages\\numpy\\lib",
+        // Python
+        "PYTHONHOME": "C:\\Program Files\\QGIS 3.16\\apps\\Python37",
+        "PYTHONPATH": "C:\\Program Files\\QGIS 3.16\\apps\\qgis-ltr\\python;%PYTHONPATH%",
+        // GDAL
+        "GDAL_DATA": "C:\\Program Files\\QGIS 3.16\\share\\gdal",
+        "GDAL_DRIVER_PATH": "C:\\Program Files\\QGIS 3.16\\bin\\gdalplugins",
+        "GDAL_FILENAME_IS_UTF8": "YES",
+        // Qt
+        "O4W_QT_BINARIES": "C:/Program Files/QGIS 3.16/apps/Qt5/bin",
+        //"O4W_QT_DOC": "C:/Program Files/QGIS 3.16/apps/Qt5/doc",
+        "O4W_QT_HEADERS": "C:/Program Files/QGIS 3.16/apps/Qt5/include",
+        "O4W_QT_LIBRARIES": "C:/Program Files/QGIS 3.16/apps/Qt5/lib",
+        "O4W_QT_PLUGINS": "C:/Program Files/QGIS 3.16/apps/Qt5/plugins",
+        "O4W_QT_PREFIX": "C:/Program Files/QGIS 3.16/apps/Qt5",
+        "O4W_QT_TRANSLATIONS": "C:/Program Files/QGIS 3.16/apps/Qt5/translations",
+        "QT_PLUGIN_PATH": "C:\\Program Files\\QGIS 3.16\\apps\\qgis-ltr\\qtplugins;C:\\Program Files\\QGIS 3.16\\apps\\qt5\\plugins",
+        // QGIS
+        "QGIS_PREFIX_PATH": "C:/Program Files/QGIS 3.16/apps/qgis-ltr",
+        // Cache
+        "VSI_CACHE": "TRUE",
+        "VSI_CACHE_SIZE": "1000000"
+    },
+}

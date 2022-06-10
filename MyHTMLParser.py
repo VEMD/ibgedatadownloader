@@ -19,10 +19,9 @@
 from html.parser import HTMLParser
 import re
 
+
 class MyHTMLParser(HTMLParser):
-    ############################
-    # PERSONALIZED HTML PARSER #
-    ############################
+    """PERSONALIZED HTML PARSER"""
 
     def __init__(self):
         """Constructor."""
@@ -81,12 +80,12 @@ class MyHTMLParser(HTMLParser):
             self.child.append(data)
             #print(self.child)
         # Set child file size using regular expression
-        match = re.match(r'(\d+[A-Za-z])', data) # N...X
+        match = re.match(r'(\d+[A-Za-z])', data)  # N...X
         matchType = 1
         if not match:
-            match = re.match(r'(\d+\.?\d+[A-Za-z])', data) # N.N...X
+            match = re.match(r'(\d+\.?\d+[A-Za-z])', data)  # N.N...X
         if not match:
-            match = re.match(r'(^\d+$)', data) # N...
+            match = re.match(r'(^\d+$)', data)  # N...
             matchType = 2
         if match and self.child != []:
             # Adds a space between value and unit and a B as sufix

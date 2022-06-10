@@ -18,10 +18,9 @@
 """
 from qgis.PyQt.QtWidgets import QProgressDialog
 
+
 class MyProgressDialog(QProgressDialog):
-    ###################
-    # PROGRESS DIALOG #
-    ###################
+    """PROGRESS DIALOG"""
 
     def __init__(self):
         """Constructor."""
