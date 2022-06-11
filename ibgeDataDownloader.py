@@ -448,10 +448,10 @@ class IbgeDataDownloader:
 
         if modelIndex.column() == 0:
             # Gets all parents and the item to create the URL
-            parents = [modelIndex.data()] if modelIndex.data() not in baseUrl else []
+            parents = [modelIndex.data()] if ['/{}'.format(modelIndex.data()) if os.path.splitext(modelIndex.data())[1] == '' else modelIndex.data()][0] not in baseUrl else []
             parent = modelIndex.parent()
             #print(modelIndex.parent(), modelIndex.parent().data())
-            while parent.data() is not None and parent.data() not in baseUrl:
+            while parent.data() is not None and ['/{}'.format(parent.data()) if os.path.splitext(parent.data())[1] == '' else parent.data()][0] not in baseUrl:
                 parents.insert(0, parent.data())
                 parent = parent.parent()
             productUrl = '{base}{subPath}'.format(base=baseUrl, subPath='/'.join(parents))
