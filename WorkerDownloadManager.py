@@ -48,7 +48,7 @@ class WorkerDownloadManager(QgsTask):
         self.unzip = listUnzipOptions[1] if listUnzipOptions[0] else False
         self.exception = []
 
-    def _getFileSize(self, url):
+    def getFileSize(self, url):
         """Returns file size of the url"""
 
         u = urllib.request.urlopen(url)
@@ -73,7 +73,7 @@ class WorkerDownloadManager(QgsTask):
         fails = 0
         for n, u in enumerate(self.listUrls):
             url = u[1]
-            fileSize = self._getFileSize(url)
+            fileSize = self.getFileSize(url)
 
             # Adjusting progress bar
             self.barMax.emit(100)

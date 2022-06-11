@@ -221,7 +221,7 @@ class IbgeDataDownloader:
                 action)
             self.iface.removeToolBarIcon(action)
 
-    def _progressDialog(self, value, text):
+    def progressDialog(self, value, text):
         """Creates and returns the progress dialog and bar"""
 
         dialog = MyProgressDialog()
@@ -283,7 +283,7 @@ class IbgeDataDownloader:
         self.dlg.lineEdit_Saida.setText(self.dirOutput)
 
         if self.dirOutput != '':
-            self._checkOkButton()
+            self.checkOkButton()
         else:
             self.dlg.button_box.button(QDialogButtonBox.Ok).setEnabled(False)
 
@@ -349,7 +349,7 @@ class IbgeDataDownloader:
                 msgType = self.tr('Success')
 
             if len(self.pluginResult[3]) > 0:
-                self.dlgBar, self.progressBar = self._progressDialog(0, self.tr(u'Adding products to Products Tree. This may take several minutes...'))
+                self.dlgBar, self.progressBar = self.progressDialog(0, self.tr(u'Adding products to Products Tree. This may take several minutes...'))
                 self.progressBar.setRange(0, 0)
                 self.dlgBar.show()
                 for i in self.pluginResult[3]:
@@ -368,7 +368,7 @@ class IbgeDataDownloader:
                             items = model.findItems(d, Qt.MatchExactly | Qt.MatchRecursive)
                             for n, item in enumerate(items):
                                 modelIndex = model.indexFromItem(item)
-                                itemUrl = self._getItemUrl(modelIndex)
+                                itemUrl = self.getItemUrl(modelIndex)
                                 #print(itemUrl, i[0])
                                 if itemUrl in i[0]:
                                     # Highlight item found
@@ -393,7 +393,7 @@ class IbgeDataDownloader:
         else:
             self.msgBar.pushMessage(msgType, self.pluginResult[0], self.pluginResult[1], duration=20)
 
-    def _padronizaTexto(self, texto):
+    def padronizaTexto(self, texto):
         """Standardizes texts to check equality."""
 
         try:
@@ -423,7 +423,7 @@ class IbgeDataDownloader:
                 item = str(e)
             objeto.addItem(item)
 
-    def _getCurrentObjects(self, clear=False):
+    def getCurrentObjects(self, clear=False):
         """Returns reference objects and clears selection, if needed"""
 
         if self.dlg.tabWidget.currentIndex() == 0:
@@ -441,10 +441,10 @@ class IbgeDataDownloader:
 
         return baseUrl, treeView, selectionModel
 
-    def _getItemUrl(self, modelIndex):
+    def getItemUrl(self, modelIndex):
         """Returns the url of the given item (modelIndex)"""
 
-        baseUrl, _, _ = self._getCurrentObjects()
+        baseUrl, _, _ = self.getCurrentObjects()
 
         if modelIndex.column() == 0:
             # Gets all parents and the item to create the URL
@@ -460,7 +460,7 @@ class IbgeDataDownloader:
 
         return productUrl
 
-    def _clearItemsHighlighted(self):
+    def clearItemsHighlighted(self):
         """Clears highlighted items"""
 
         while self.itemsHighlighted:
@@ -475,19 +475,19 @@ class IbgeDataDownloader:
         self.itemLastCheckState = item.checkState() if item.isCheckable() else None
 
         # Set background of highlighted items to default
-        self._clearItemsHighlighted()
+        self.clearItemsHighlighted()
 
     def treeViewClicked(self, modelIndex):
         """Slot of clicked signal that constructs the items URL and enables the OK button"""
 
-        _, treeView, selectionModel = self._getCurrentObjects()
+        _, treeView, selectionModel = self.getCurrentObjects()
 
         # Set background of highlighted items to default
-        self._clearItemsHighlighted()
+        self.clearItemsHighlighted()
 
         if modelIndex.column() == 0:
             # Get url of clicked item
-            productUrl = self._getItemUrl(modelIndex)
+            productUrl = self.getItemUrl(modelIndex)
 
             # Add or remove from products variable
             model = modelIndex.model()
@@ -520,12 +520,12 @@ class IbgeDataDownloader:
                 self.dlg.checkBox_AddLayer.setEnabled(False)
 
             # Check if OK button can be enabled
-            self._checkOkButton()
+            self.checkOkButton()
 
     def treeViewExpanded(self, modelIndex):
         """Slot of expanded signal that adds item's children to the tree"""
 
-        _, treeView, _ = self._getCurrentObjects()
+        _, treeView, _ = self.getCurrentObjects()
 
         if modelIndex not in self.itemsExpanded:
             # Deletes first empty child
@@ -537,7 +537,7 @@ class IbgeDataDownloader:
 
             # Adds item's children
             #print('/'.join(parents))
-            url = self._getItemUrl(modelIndex)
+            url = self.getItemUrl(modelIndex)
             #print(url)
             self.htmlParser.resetParent()
             self.htmlParser.resetChildren()
@@ -558,7 +558,7 @@ class IbgeDataDownloader:
                 for child in children:
                     #print('adicionando {} ao item {}'.format(child.replace('/', ''), modelIndex.data()))
                     child[0] = child[0].replace('/', '')
-                    self._addTreeViewParentChildItem(treeView, modelIndex, child)
+                    self.addTreeViewParentChildItem(treeView, modelIndex, child)
 
             # Add the item to expanded list
             self.itemsExpanded.append(modelIndex)
@@ -573,7 +573,7 @@ class IbgeDataDownloader:
             self.dlg.label_Match.setEnabled(True)
             self.dlg.doubleSpinBox_MatchValue.setEnabled(True)
 
-    def _addTreeViewParentChildItem(self, treeView, parent, child=None):
+    def addTreeViewParentChildItem(self, treeView, parent, child=None):
         """Adds parent or children items to the QTreeView"""
 
         model = treeView.model()
@@ -639,7 +639,7 @@ class IbgeDataDownloader:
         self.dlg.checkBox_AddLayer.setChecked(False)
         self.dlg.checkBox_AddLayer.setEnabled(False)
         # Disable OK button
-        self._checkOkButton()
+        self.checkOkButton()
 
     def searchWordTextChanged(self, text):
         """Standardizes text and enables or disables search button if text respects standard features"""
@@ -657,7 +657,7 @@ class IbgeDataDownloader:
     def treeViewSelectionChanged(self, selected, deselected):
         """Permits the selection only if column == 0, feed selectedSearch attribute"""
 
-        _, treeView, selectionModel = self._getCurrentObjects(True)
+        _, treeView, selectionModel = self.getCurrentObjects(True)
 
         if selected.indexes():
             item = treeView.model().itemFromIndex(selected.indexes()[0])
@@ -666,7 +666,7 @@ class IbgeDataDownloader:
                 self.selectedSearch = ''
             else:
                 # Define selected search
-                productUrl = self._getItemUrl(selected.indexes()[0])
+                productUrl = self.getItemUrl(selected.indexes()[0])
                 self.selectedSearch = productUrl if os.path.splitext(productUrl)[1] == '' else ''
             # Enable or disable selected item search option
             self.radioButtonSearchGeoToggled(self.dlg.radioButton_SearchGeo.isChecked())
@@ -689,10 +689,10 @@ class IbgeDataDownloader:
             self.dlg.checkBox_SearchSelectedOnly.setEnabled(False)
 
     def searchClicked(self):
-        """Search for products with typed word"""
+        """Searches for products with typed word"""
 
         # Set background of highlighted items to default
-        self._clearItemsHighlighted()
+        self.clearItemsHighlighted()
 
         # Search params
         root = self.geobaseUrl if self.dlg.radioButton_SearchGeo.isChecked() else self.statbaseUrl
@@ -705,7 +705,7 @@ class IbgeDataDownloader:
         treeView.collapseAll()
 
         # Preparing product search
-        self.dlgBar, self.progressBar = self._progressDialog(0, self.tr(u'Searching data...'))
+        self.dlgBar, self.progressBar = self.progressDialog(0, self.tr(u'Searching data...'))
         self.dlgBar.show()
         self.msgBar.pushMessage(self.tr('Processing'), self.tr(u'Searching products with "{}" word.\nThis may take several minutes...').format(text), Qgis.Info, duration=0)
         # Adjusting button text
@@ -737,7 +737,7 @@ class IbgeDataDownloader:
 
         self.helpDialog.show()
 
-    def _configDialogs(self):
+    def configDialogs(self):
         """Configures dialog and connects signals/slots."""
 
         # Set window icon
@@ -745,8 +745,8 @@ class IbgeDataDownloader:
         self.dlg.setWindowIcon(self.pluginIcon)
 
         # Add top parent to the tree
-        self._addTreeViewParentChildItem(self.dlg.treeView_Geo, os.path.basename(os.path.normpath(self.geobaseUrl)))
-        self._addTreeViewParentChildItem(self.dlg.treeView_Stat, os.path.basename(os.path.normpath(self.statbaseUrl)))
+        self.addTreeViewParentChildItem(self.dlg.treeView_Geo, os.path.basename(os.path.normpath(self.geobaseUrl)))
+        self.addTreeViewParentChildItem(self.dlg.treeView_Stat, os.path.basename(os.path.normpath(self.statbaseUrl)))
 
         # Adjusting headers size mode
         self.dlg.treeView_Geo.header().setSectionResizeMode(QHeaderView.ResizeToContents)
@@ -789,7 +789,7 @@ class IbgeDataDownloader:
         self.dlg.checkBox_AddLayer.setEnabled(False)
         self.dlg.pushButton_Search.setEnabled(False)
 
-    def _checkOkButton(self):
+    def checkOkButton(self):
         """Enables or disables OK button"""
 
         if self.selectedProductsUrl:
@@ -804,7 +804,7 @@ class IbgeDataDownloader:
             # Disable OK button
             self.dlg.button_box.button(QDialogButtonBox.Ok).setEnabled(False)
 
-    def _execute(self):
+    def execute(self):
         """Does the real work:
            -Download file
            -Extract file, if checked
@@ -812,7 +812,7 @@ class IbgeDataDownloader:
            -Add layer to legend panel *** NOT IMPLEMENTED"""
 
         # Preparing product download
-        self.dlgBar, self.progressBar = self._progressDialog(0, self.tr(u'Downloading data...'))
+        self.dlgBar, self.progressBar = self.progressDialog(0, self.tr(u'Downloading data...'))
         self.dlgBar.show()
         self.msgBar.pushMessage(self.tr('Processing'), self.tr(u'Working on selected data...'), Qgis.Info, duration=0)
 
@@ -845,7 +845,7 @@ class IbgeDataDownloader:
             self.firstStart = False
             self.dlg = IbgeDataDownloaderDialog()
             self.helpDialog = HelpDialog(self.dlg)
-            self._configDialogs()
+            self.configDialogs()
 
         # show the dialog
         self.dlg.show()
@@ -853,4 +853,4 @@ class IbgeDataDownloader:
         result = self.dlg.exec_()
         # See if OK was pressed
         if result:
-            self._execute()
+            self.execute()
