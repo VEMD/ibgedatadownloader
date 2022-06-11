@@ -12,7 +12,7 @@ email=vinicius_etchebeur@hotmail.com
 
 about=The purpose of this plugin is to easy download and merge geociences and statistical data from IBGE repository.
 
-tracker=https://github.com/VEMD/ibgedatadownloader
+tracker=https://github.com/VEMD/ibgedatadownloader/issues
 repository=https://github.com/VEMD/ibgedatadownloader
 # End of mandatory metadata
 
