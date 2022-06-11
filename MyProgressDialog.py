@@ -20,7 +20,7 @@ from qgis.PyQt.QtWidgets import QProgressDialog
 
 
 class MyProgressDialog(QProgressDialog):
-    """PROGRESS DIALOG"""
+    """Generic progress dialog"""
 
     def __init__(self):
         """Constructor."""

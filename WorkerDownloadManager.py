@@ -23,7 +23,8 @@ import os, urllib, zipfile, tarfile
 
 
 class WorkerDownloadManager(QgsTask):
-    """DOWNLOADS AND EXTRACTS A COMPACTED FILE"""
+    """Downloads and extracts files from
+    zip or tar file in background"""
 
     # Signals emitted
     textProgress = pyqtSignal(str)  # text for progress dialog

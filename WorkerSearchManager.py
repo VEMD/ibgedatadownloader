@@ -24,7 +24,7 @@ from .MyHTMLParser import MyHTMLParser
 
 
 class WorkerSearchManager(QgsTask):
-    """SEARCHES IN A FTP'S URL FOR A WORD"""
+    """Searches in a FTP's url for a word in background"""
 
     # Signals emitted
     textProgress = pyqtSignal(str)  # text for progress dialog

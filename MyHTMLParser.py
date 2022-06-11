@@ -21,7 +21,7 @@ import re
 
 
 class MyHTMLParser(HTMLParser):
-    """PERSONALIZED HTML PARSER"""
+    """Personalizes HTML parser"""
 
     def __init__(self):
         """Constructor."""
