@@ -708,6 +708,8 @@ class IbgeDataDownloader:
         self.dlgBar, self.progressBar = self._progressDialog(0, self.tr(u'Searching data...'))
         self.dlgBar.show()
         self.msgBar.pushMessage(self.tr('Processing'), self.tr(u'Searching products with "{}" word.\nThis may take several minutes...').format(text), Qgis.Info, duration=0)
+        # Adjusting button text
+        self.dlgBarCancelButton.setText(self.tr('Interrupt'))
 
         # Instantiate the background worker and connects slots to signals
         taskDesc = u'{} {}.\n{}...'.format(self.tr(u'Searching'), text, self.tr('The search may take several minutes'))
