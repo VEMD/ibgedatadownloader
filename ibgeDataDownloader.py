@@ -442,7 +442,7 @@ class IbgeDataDownloader:
         return baseUrl, treeView, selectionModel
 
     def _getItemUrl(self, modelIndex):
-        """Returns the url of the given item (modelIndex"""
+        """Returns the url of the given item (modelIndex)"""
 
         baseUrl, _, _ = self._getCurrentObjects()
 
@@ -739,6 +739,7 @@ class IbgeDataDownloader:
         """Configures dialog and connects signals/slots."""
 
         # Set window icon
+        self.helpDialog.setWindowIcon(self.pluginIcon)
         self.dlg.setWindowIcon(self.pluginIcon)
 
         # Add top parent to the tree
