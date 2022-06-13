@@ -32,7 +32,7 @@ from qgis.PyQt.QtWidgets import (
     QPushButton
 )
 from qgis.core import Qgis, QgsProject, QgsApplication, QgsVectorLayer
-import os, unicodedata, urllib, zipfile, tarfile, http, http.client, socket
+import os, urllib, zipfile, tarfile, http, http.client, socket
 
 # Initialize Qt resources from file resources.py
 from .resources import *
@@ -392,19 +392,6 @@ class IbgeDataDownloader:
             self.msgBar.pushMessage(msgType, self.pluginResult[0], '\n\n'.join(self.pluginResult[2]), self.pluginResult[1], duration=0)
         else:
             self.msgBar.pushMessage(msgType, self.pluginResult[0], self.pluginResult[1], duration=20)
-
-    def padronizaTexto(self, texto):
-        """Standardizes texts to check equality."""
-
-        try:
-            texto = unicode(texto, 'utf-8')
-        except (TypeError, NameError):
-            pass
-        texto = unicodedata.normalize('NFD', texto)
-        texto = texto.encode('ascii', 'ignore')
-        texto = texto.decode("utf-8")
-        texto = texto.replace(' ', '_')
-        return str(texto.lower())
 
     def populateComboListBox(self, objeto, lista, coluna='', inicial=''):
         """Populates a list or combo object."""

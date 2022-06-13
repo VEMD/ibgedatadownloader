@@ -104,7 +104,7 @@ class WorkerDownloadManager(QgsTask):
                 # Check if task was canceled by the user
                 if self.isCanceled():
                     self.processResult.emit([self.tr(u'The process was canceled by the user.'), Qgis.Critical, self.exception, url, 'download'])
-                    return False
+                    return True
 
                 buffer = u.read(block_sz)
                 if not buffer:

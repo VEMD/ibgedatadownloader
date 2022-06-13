@@ -19,7 +19,8 @@
 from qgis.PyQt.QtCore import pyqtSignal
 from qgis.PyQt.QtGui import QIcon
 from qgis.core import QgsTask, Qgis, QgsProject
-import urllib, http, http.client, time, socket
+import urllib, http, http.client, time, socket, unicodedata
+from difflib import SequenceMatcher
 from .MyHTMLParser import MyHTMLParser
 
 
@@ -53,6 +54,19 @@ class WorkerSearchManager(QgsTask):
         http.client._MAXHEADERS = 999999999999999999
         http.client._MAXLINE = 999999999999999999
 
+    def standardizeText(self, text):
+        """Standardizes texts to check equality."""
+
+        try:
+            text = unicode(text, 'utf-8')
+        except (TypeError, NameError):
+            pass
+        text = unicodedata.normalize('NFD', text)
+        text = text.encode('ascii', 'ignore')
+        text = text.decode("utf-8")
+        text = text.replace(' ', '_')
+        return str(text.lower())
+
     def finished(self, result):
         """This function is called automatically when the task is completed and is
         called from the main thread so it is safe to interact with the GUI etc here"""
@@ -81,7 +95,7 @@ class WorkerSearchManager(QgsTask):
         except socket.timeout as e:
             self.exception.append(e)
             self.processResult.emit([self.tr(u'The search fails due to a server timeout.'), Qgis.Critical, self.exception, matchUrl, 'search'])
-            return False
+            return True
         # Set timeout for requests to default
         socket.setdefaulttimeout(None)
         children = self.htmlParser.getChildren()
@@ -91,7 +105,11 @@ class WorkerSearchManager(QgsTask):
             searchUrls = []
             for child in children:
                 searchUrls.append([self.rootFtp + child[0], child[1]])
-                if self.txtSearch.lower() in child[0].lower():
+                if self.matchContains:
+                    if self.txtSearch.lower() in child[0].lower():
+                        matchUrl.append([self.rootFtp + child[0], child[1]])
+                        self.textProgress.emit(self.tr('{} Product(s) found.\nThe search may take several minutes...').format(len(matchUrl)))
+                elif SequenceMatcher(None, self.standardizeText(self.txtSearch), self.standardizeText(child[0])).ratio() * 100 >= self.matchScore:
                     matchUrl.append([self.rootFtp + child[0], child[1]])
                     self.textProgress.emit(self.tr('{} Product(s) found.\nThe search may take several minutes...').format(len(matchUrl)))
             loop = 0
@@ -146,7 +164,11 @@ class WorkerSearchManager(QgsTask):
                     if children:
                         for child in children:
                             searchUrls.append([sUrl[0] + child[0], child[1]])
-                            if self.txtSearch.lower() in child[0].lower():
+                            if self.matchContains:
+                                if self.txtSearch.lower() in child[0].lower():
+                                    matchUrl.append([sUrl[0] + child[0], child[1]])
+                                    self.textProgress.emit(self.tr('{} Product(s) found.\nThe search may take several minutes...').format(len(matchUrl)))
+                            elif SequenceMatcher(None, self.standardizeText(self.txtSearch), self.standardizeText(child[0])).ratio() * 100 >= self.matchScore:
                                 matchUrl.append([sUrl[0] + child[0], child[1]])
                                 self.textProgress.emit(self.tr('{} Product(s) found.\nThe search may take several minutes...').format(len(matchUrl)))
                     try:
