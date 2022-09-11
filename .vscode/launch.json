@@ -1,25 +1,34 @@
+// https://gispo.fi/en/blog/cooking-with-gispo-qgis-plugin-development-in-vs-code/
 {
-    // Use IntelliSense to learn about possible attributes.
-    // Hover to view descriptions of existing attributes.
-    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
-    "version": "0.2.0",
-    "configurations": [
-
+  "version": "0.2.0",
+  "configurations": [
+    {
+      // Attaching to the debugging server running on QGIS side.
+      "name": "Python: Remote Attach",
+      "type": "python",
+      "request": "attach",
+      "connect": {
+        "host": "localhost",
+        "port": 5678
+      },
+      "pathMappings": [
         {
-            "name": "QGIS: Remote Attach",
-            "type": "python",
-            "request": "attach",
-            "connect": {
-                "host": "localhost",
-                "port": 5678
-            },
-            "pathMappings": [
-                {
-                    "localRoot": "${workspaceFolder}",
-                    "remoteRoot": "."
-                }
-            ],
-            "justMyCode": false
+          "localRoot": "${workspaceFolder}/ibge_edicao_camadas",
+          "remoteRoot": "${env:AppData}/QGIS/QGIS3/profiles/default/python/plugins/ibge_edicao_camadas"
         }
-    ]
+      ],
+      "justMyCode": false,
+    },
+    {
+      // Make sure that tests can be debugged in VS Code even if using testing coverage.
+      "name": "Debug Tests",
+      "type": "python",
+      "request": "launch",
+      "console": "integratedTerminal",
+      "justMyCode": false,
+      "env": {
+        "PYTEST_ADDOPTS": "--no-cov"
+      }
+    }
+  ]
 }

@@ -1,54 +1,91 @@
 {
-    "python.languageServer": "Jedi", // PyLancer just came out recently, but i havent tested it out with this configuration
-    // Linter
-    "python.linting.enabled": true,
-    
-    "python.linting.flake8Enabled": true,
-    "python.linting.flake8Args": [
-        "--ignore=E24,E265,E501,W504,W1401,E202,E401",
-        "--verbose"
-    ],
-    
+  "editor.rulers": [
+    {"column": 109, "color": "#303030"},
+    119  // Use default color
+  ],
 
-    // Wait.. this isen't a python interpreter..
-    "python.defaultInterpreterPath": "C:/Program Files/QGIS 3.16/bin/python-qgis-ltr.bat",
+  "files.associations": {
+    ".git-blame-ignore-revs": "ini",
+    "metadata.txt": "ini",
+    "*.pth": "python"
+  },
 
-    /*
-    "python.linting.pylintEnabled": true,
-    // Some arguments to make pylint behave nicely with PyQt5 and qgis bindinds
-    "python.linting.pylintArgs": [
-        "--extension-pkg-whitelist=PyQt5,qgis,db_manager",
-        "--disable=all",
-        "--enable=F,E,unreachable,duplicate-key,unnecessary-semicolon,global-variable-not-assigned,unused-variable,binary-op-exception,bad-format-string,anomalous-backslash-in-string,bad-open-mode"
-    ],
-    */
-    
+  "git.branchProtection": [
+    "main"
+  ],
 
-    // Replicate the QGIS environment on the terminal
-    // {{INSERT_YOUR_USER}} or any path really should be replaced with your own installation path
-    "terminal.integrated.env.windows": {
-        // Path
-        "PATH": "C:\\Program Files\\Git\\cmd;C:\\Program Files\\QGIS 3.16\\apps\\qgis-ltr\\bin;C:\\Program Files\\QGIS 3.16\\apps\\Python37;C:\\Program Files\\QGIS 3.16\\apps\\Python37\\Scripts;C:\\Program Files\\QGIS 3.16\\apps\\qt5\\bin;C:\\Program Files\\QGIS 3.16\\apps\\Python37\\Scripts;C:\\Program Files\\QGIS 3.16\\bin;C:\\WINDOWS\\system32;C:\\WINDOWS;C:\\WINDOWS\\system32\\WBem;C:\\Program Files\\QGIS 3.16\\apps\\Python37\\Lib\\site-packages\\pywin32_system32;C:\\Program Files\\QGIS 3.16\\apps\\Python37\\Lib\\site-packages\\numpy\\lib",
-        // Python
-        "PYTHONHOME": "C:\\Program Files\\QGIS 3.16\\apps\\Python37",
-        "PYTHONPATH": "C:\\Program Files\\QGIS 3.16\\apps\\qgis-ltr\\python;%PYTHONPATH%",
-        // GDAL
-        "GDAL_DATA": "C:\\Program Files\\QGIS 3.16\\share\\gdal",
-        "GDAL_DRIVER_PATH": "C:\\Program Files\\QGIS 3.16\\bin\\gdalplugins",
-        "GDAL_FILENAME_IS_UTF8": "YES",
-        // Qt
-        "O4W_QT_BINARIES": "C:/Program Files/QGIS 3.16/apps/Qt5/bin",
-        //"O4W_QT_DOC": "C:/Program Files/QGIS 3.16/apps/Qt5/doc",
-        "O4W_QT_HEADERS": "C:/Program Files/QGIS 3.16/apps/Qt5/include",
-        "O4W_QT_LIBRARIES": "C:/Program Files/QGIS 3.16/apps/Qt5/lib",
-        "O4W_QT_PLUGINS": "C:/Program Files/QGIS 3.16/apps/Qt5/plugins",
-        "O4W_QT_PREFIX": "C:/Program Files/QGIS 3.16/apps/Qt5",
-        "O4W_QT_TRANSLATIONS": "C:/Program Files/QGIS 3.16/apps/Qt5/translations",
-        "QT_PLUGIN_PATH": "C:\\Program Files\\QGIS 3.16\\apps\\qgis-ltr\\qtplugins;C:\\Program Files\\QGIS 3.16\\apps\\qt5\\plugins",
-        // QGIS
-        "QGIS_PREFIX_PATH": "C:/Program Files/QGIS 3.16/apps/qgis-ltr",
-        // Cache
-        "VSI_CACHE": "TRUE",
-        "VSI_CACHE_SIZE": "1000000"
-    },
+  "gitlens.advanced.blame.customArguments": [
+    "-w",
+    "--ignore-revs-file",
+    ".git-blame-ignore-revs"
+  ],
+
+  "python.languageServer": "Pylance",
+
+  // Wait.. this isn't a python interpreter..
+  "python.defaultInterpreterPath": "C:/Program Files/QGIS 3.16/bin/python-qgis-ltr.bat",
+
+  // Linter
+  "python.linting.enabled": true,
+  "python.linting.banditArgs": ["-c", "pyproject.toml"],
+  "python.linting.banditEnabled": true,
+  "python.linting.flake8Enabled": true,
+  "python.linting.mypyEnabled": true,
+  "python.linting.pylintEnabled": true,
+
+  // Formatting with black and isort
+  "python.formatting.provider": "black",
+  "[python]": {
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": true
+    }
+  },
+
+  // Testing with pytest
+  "python.testing.unittestEnabled": false,
+  "python.testing.pytestEnabled": true,
+
+  // PyQt Integration
+  "qtForPython.designer.path": "C:\\Program Files\\QGIS 3.16\\bin\\qgis-ltr-designer.bat",
+
+  // Replicate the QGIS environment on the terminal
+  "terminal.integrated.env.windows": {
+    // Path
+    "PATH": "${env:ProgramFiles}\\QGIS 3.16\\apps\\qgis-ltr\\bin;${env:ProgramFiles}\\QGIS 3.16\\apps\\grass\\grass78\\lib;${env:ProgramFiles}\\QGIS 3.16\\apps\\grass\\grass78\\bin;${env:ProgramFiles}\\QGIS 3.16\\apps\\Python37;${env:ProgramFiles}\\QGIS 3.16\\apps\\Python37\\Scripts;${env:ProgramFiles}\\QGIS 3.16\\apps\\qt5\\bin;${env:ProgramFiles}\\QGIS 3.16\\bin;${env:Path}",
+    // Python
+    "PYTHONPATH": "${env:ProgramFiles}\\QGIS 3.16\\apps\\qgis-ltr\\python;${env:PYTHONPATH}",
+    // GDAL
+    "GDAL_DATA": "${env:ProgramFiles}\\QGIS 3.16\\share\\gdal",
+    "GDAL_DRIVER_PATH": "${env:ProgramFiles}\\QGIS 3.16\\bin\\gdalplugins",
+    "GDAL_FILENAME_IS_UTF8": "YES",
+    // GeoTIFF
+    "GEOTIFF_CSV": "${env:ProgramFiles}\\QGIS 3.16\\share\\epsg_csv",
+    // GRASS
+    "GISBASE": "${env:ProgramFiles}\\QGIS 3.16\\apps\\grass\\grass78",
+    "GRASS_PROJSHARE": "${env:ProgramFiles}\\QGIS 3.16\\share\\proj",
+    "GRASS_PYTHON": "${env:ProgramFiles}\\QGIS 3.16\\bin\\python3.exe",
+    // JPEG
+    "JPEGMEM": "1000000",
+    // Qt
+    "O4W_QT_PREFIX": "${env:ProgramFiles}\\QGIS 3.16\\apps\\Qt5",
+    "O4W_QT_BINARIES": "${env:ProgramFiles}\\QGIS 3.16\\apps\\Qt5\\bin",
+    "O4W_QT_HEADERS": "${env:ProgramFiles}\\QGIS 3.16\\apps\\Qt5\\include",
+    "O4W_QT_LIBRARIES": "${env:ProgramFiles}\\QGIS 3.16\\apps\\Qt5\\lib",
+    "O4W_QT_PLUGINS": "${env:ProgramFiles}\\QGIS 3.16\\apps\\Qt5\\plugins",
+    "O4W_QT_TRANSLATIONS": "${env:ProgramFiles}\\QGIS 3.16\\apps\\Qt5\\translations",
+    "QT_PLUGIN_PATH": "${env:ProgramFiles}\\QGIS 3.16\\apps\\qgis-ltr\\qtplugins;${env:ProgramFiles}\\QGIS 3.16\\apps\\qt5\\plugins",
+    // Proj
+    "PROJ_LIB": "${env:ProgramFiles}\\QGIS 3.16\\share\\proj",
+    // PEP 540
+    "PYTHONUTF8": "1",
+    // QGIS
+    "QGIS_PREFIX_PATH": "${env:ProgramFiles}\\QGIS 3.16\\apps\\qgis-ltr",
+    // SSL
+    "SSL_CERT_DIR": "${env:ProgramFiles}\\QGIS 3.16\\apps\\openssl\\certs",
+    "SSL_CERT_FILE": "${env:ProgramFiles}\\QGIS 3.16\\bin\\curl-ca-bundle.crt",
+    // Cache
+    "VSI_CACHE": "TRUE",
+    "VSI_CACHE_SIZE": "1000000"
+  },
 }
