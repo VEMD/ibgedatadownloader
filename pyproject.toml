@@ -1,0 +1,114 @@
+[build-system]
+requires = ["setuptools>=65.3"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ibge_edicao_camadas"
+readme = "README.md"
+requires-python = ">=3.7"
+dependencies = ["requests~=2.23"]
+
+# Manter isso apenas no metadata.txt
+dynamic = ["version"]
+
+[project.optional-dependencies]
+dev = [
+  "bandit[toml]~=1.7",
+  "black~=22.8",
+  "flake8~=5.0",
+  "flake8-2020~=1.7",
+  "flake8-broken-line~=0.5",
+  "flake8-bugbear~=22.8",
+  "flake8-builtins~=1.5",
+  "flake8-comprehensions~=3.10",
+  "flake8-encodings[classes]~=0.5",
+  "flake8-mutable~=1.2",
+  "flake8-no-pep420~=2.3",
+  "flake8-noqa~=1.2",
+  "flake8-pytest-style~=1.6",
+  "flake8-qgis~=1.0",
+  "flake8-return~=1.1",
+  "flake8-simplify~=0.19",
+  "flake8-tidy-imports~=4.8",
+  "flake8-use-fstring~=1.4",
+  "isort~=5.10",
+  "mypy~=0.971",
+  "pandas_vet~=0.2",
+  "pep8-naming~=0.13",
+  "pre-commit~=2.20",
+  "pylint~=2.13.9;python_version<'3.7.2'",
+  "pylint~=2.15;python_version>='3.7.2'",
+  "qgis-stubs~=0.1.0;python_version<'3.9'",
+  "types-requests~=2.23"
+]
+pack = [
+  "qgis-plugin-ci==2.3"
+]
+
+[project.urls]
+Repository = "https://github.com/prjQGIS/ibge_edicao_camadas"
+
+[tool.setuptools.dynamic]
+version = {attr = "ibge_edicao_camadas.__about__.__version__"}
+
+[tool.setuptools.packages.find]
+include = ["ibge_edicao_camadas*"]
+
+[tool.bandit]
+skips = [
+  "B101",  # assert_used
+  "B410"   # import-lxml
+]
+
+[tool.black]
+line-length = 119
+target-version = ['py37', 'py38', 'py39', 'py310', 'py311']
+
+[tool.isort]
+profile = "black"
+line_length = 119
+skip_gitignore = true
+
+[tool.mypy]
+enable_error_code = ["ignore-without-code"]
+no_implicit_optional = true
+no_implicit_reexport = true
+show_column_numbers = true
+show_error_codes = true
+show_error_context = true
+strict_equality = true
+strict_concatenate = true
+warn_redundant_casts = true
+warn_return_any = true
+warn_unreachable = true
+warn_unused_ignores = true
+
+[tool.pylint.messages_control]
+disable = [
+  "invalid-name",                  # C0103
+  "disallowed-name",               # C0104
+  "missing-module-docstring",      # C0114
+  "missing-class-docstring",       # C0115
+  "missing-function-docstring",    # C0116
+  "line-too-long",                 # C0301
+  "wrong-import-position",         # C0413
+  "import-outside-toplevel",       # C0415
+  "import-error",                  # E0401
+  "no-name-in-module",             # E0611
+  "no-member",                     # E1101
+  "too-few-public-methods",        # R0903
+  "too-complex",                   # R1260
+  "broad-except",                  # W0703
+  "cache-max-size-none",           # W1517
+]
+
+[tool.pylint.design]
+max-parents = 14         # default  7  # R0901
+max-attributes = 14      # default  7  # R0902
+max-public-methods = 40  # default 20  # R0904
+max-returns = 12         # default  6  # R0911
+max-branches = 24        # default 12  # R0912
+max-args = 10            # default  5  # R0913
+max-locals = 30          # default 15  # R0914
+max-statements = 100     # default 50  # R0915
+max-bool-expr = 10       # default  5  # R0916

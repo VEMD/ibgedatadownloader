@@ -39,7 +39,6 @@ pip-delete-this-directory.txt
 
 # Unit test / coverage reports
 htmlcov/
-junit/
 .tox/
 .nox/
 .coverage
@@ -48,6 +47,7 @@ junit/
 nosetests.xml
 coverage.xml
 *.cover
+*.py,cover
 .hypothesis/
 .pytest_cache/
 
@@ -70,7 +70,6 @@ instance/
 
 # Sphinx documentation
 docs/_build/
-docs/_apidoc/
 
 # PyBuilder
 target/
@@ -92,8 +91,12 @@ ipython_config.py
 #   install all needed dependencies.
 #Pipfile.lock
 
-# celery beat schedule file
+# PEP 582; used by e.g. github.com/David-OConnor/pyflow
+__pypackages__/
+
+# Celery stuff
 celerybeat-schedule
+celerybeat.pid
 
 # SageMath parsed files
 *.sage.py
@@ -124,15 +127,3 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
-
-# --- CUSTOM ---
-gdalwmscache/
-*.zip
-*.qm
-.qt_for_python/
-analiseDbColeta.py
-analiseRota.py
-atividades.txt
-sugestoes_mudanca.txt
-*.xlsx
-*.docx

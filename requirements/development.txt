@@ -1,0 +1,30 @@
+# Develoment dependencies
+# -----------------------
+
+bandit[toml]~=1.7
+black~=22.8
+flake8~=5.0
+flake8-2020~=1.7
+flake8-broken-line~=0.5
+flake8-bugbear~=22.9
+flake8-builtins~=1.5
+flake8-comprehensions~=3.10
+flake8-encodings[classes]~=0.5
+flake8-mutable~=1.2
+flake8-no-pep420~=2.3
+flake8-noqa~=1.2
+flake8-pytest-style~=1.6
+flake8-qgis~=1.0
+flake8-return~=1.1
+flake8-simplify~=0.19
+flake8-tidy-imports~=4.8
+flake8-use-fstring~=1.4
+isort~=5.10
+mypy~=0.971
+pandas_vet~=0.2
+pep8-naming~=0.13
+pre-commit~=2.20
+pylint~=2.13.9;python_version<'3.7.2'
+pylint~=2.15;python_version>='3.7.2'
+qgis-stubs~=0.1.0;python_version<'3.9'
+types-requests~=2.28

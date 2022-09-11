@@ -1,0 +1,26 @@
+# Após criar commits que introduzem modificações estritamente de formato/estilo,
+# adicionar o hash do commit aqui, para o `git blame` ignorá-lo.
+#
+# Passar a flag `--ignore-revs-file .git-blame-ignore-revs` para o `git blame`
+# faz com que ele ignore as modificações feitas pelos commits especificados aqui
+# na hora de atribuir a "culpa", como se elas nunca tivessem acontecido.
+#
+# Por exemplo:
+#   git blame --ignore-revs-file .git-blame-ignore-revs ...
+#
+# Para melhores resultados, ignorar também quaisquer alterações que envolvam apenas espaços em branco:
+#   git blame -w --ignore-revs-file .git-blame-ignore-revs ...
+#
+# É possível tornar esse comportamento o padrão para o repositório local:
+#   git config blame.ignoreRevsFile .git-blame-ignore-revs
+#
+# No VS Code, se estiver usando a funcionalidade de blame da extensão GitLens,
+# o `-w` pode ser passado como um valor para a opção `gitlens.advanced.blame.customArguments`.
+#
+# Note que o `git blame` não define um arquivo padrão para essa finalidade.
+# O nome `.git-blame-ignore-revs` é apenas uma convenção.
+#
+# Para mais detalhes:
+# https://git-scm.com/docs/git-config#Documentation/git-config.txt-blameignoreRevsFile
+
+
