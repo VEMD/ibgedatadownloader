@@ -8,7 +8,9 @@
       "type": "shell",
       "windows": {
         "command": "${workspaceFolder}\\scripts\\deploy_qgis.bat",
-        "options": {"cwd": "${workspaceFolder}\\scripts"}
+        "options": {
+          "cwd": "${workspaceFolder}\\scripts"
+        }
       },
       "problemMatcher": [],
       "group": {

@@ -16,8 +16,8 @@
  *                                                                         *
  ***************************************************************************/
 """
-from html.parser import HTMLParser
 import re
+from html.parser import HTMLParser
 
 
 class MyHTMLParser(HTMLParser):
@@ -41,33 +41,33 @@ class MyHTMLParser(HTMLParser):
     def handle_starttag(self, tag, attrs):
         """Overrides to feed parent and child"""
 
-        if tag == 'tr':
+        if tag == "tr":
             self.trElement = True
-            #print(tag, self.trElement)
+            # print(tag, self.trElement)
 
-        if tag == 'a':
+        if tag == "a":
             for attr in attrs:
                 if attr[1]:
-                    if attr[1].startswith('/'):
+                    if attr[1].startswith("/"):
                         # Set parent
                         self.parent = attr[1]
-                    if not any(attr[1].startswith(item) for item in ('?', '/')):
+                    if not any(attr[1].startswith(item) for item in ("?", "/")):
                         # Set child name
                         self.child = [attr[1]]
-                        #print('adicionou handle_starttag')
-            #print(tag, self.child)
+                        # print('adicionou handle_starttag')
+            # print(tag, self.child)
 
     def handle_endtag(self, tag):
         """Overrides to feed children and reset child"""
 
-        if tag == 'tr':
+        if tag == "tr":
             self.trElement = False
             # If child is valid, append to children
             if self.child != []:
                 self.children.append(self.child)
             # Reset child
             self.resetChild()
-            #print(tag, self.trElement)
+            # print(tag, self.trElement)
 
     def handle_data(self, data):
         """Overrides to feed information about child"""
@@ -75,25 +75,25 @@ class MyHTMLParser(HTMLParser):
         # Remove white spaces at start / end of the string
         data = data.lstrip().rstrip()
         # Set child last modified date
-        match = re.match(r'(\d+-\d+-\d+ \d+:\d+)', data)
+        match = re.match(r"(\d+-\d+-\d+ \d+:\d+)", data)
         if match and self.child != []:
             self.child.append(data)
-            #print(self.child)
+            # print(self.child)
         # Set child file size using regular expression
-        match = re.match(r'(\d+[A-Za-z])', data)  # N...X
+        match = re.match(r"(\d+[A-Za-z])", data)  # N...X
         matchType = 1
         if not match:
-            match = re.match(r'(\d+\.?\d+[A-Za-z])', data)  # N.N...X
+            match = re.match(r"(\d+\.?\d+[A-Za-z])", data)  # N.N...X
         if not match:
-            match = re.match(r'(^\d+$)', data)  # N...
+            match = re.match(r"(^\d+$)", data)  # N...
             matchType = 2
         if match and self.child != []:
             # Adds a space between value and unit and a B as sufix
             if matchType == 1:
-                self.child.append('{} {}B'.format(data[:-1], data[-1]))
+                self.child.append("{} {}B".format(data[:-1], data[-1]))
             elif matchType == 2:
-                self.child.append('{} B'.format(data))
-            #print(self.child)
+                self.child.append("{} B".format(data))
+            # print(self.child)
 
     def getChildren(self):
         """Returns childs"""

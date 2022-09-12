@@ -16,10 +16,14 @@
  *                                                                         *
  ***************************************************************************/
 """
+import os
+import tarfile
+import urllib
+import zipfile
+
+from qgis.core import Qgis, QgsProject, QgsTask
 from qgis.PyQt.QtCore import pyqtSignal
 from qgis.PyQt.QtGui import QIcon
-from qgis.core import QgsTask, Qgis, QgsProject
-import os, urllib, zipfile, tarfile
 
 
 class WorkerDownloadManager(QgsTask):
@@ -44,7 +48,7 @@ class WorkerDownloadManager(QgsTask):
         self.listUrls = listUrls
         self.totalUrls = len(self.listUrls)
         self.dirPad = dirPad
-        self.pluginIcon = QIcon(':/plugins/ibgedatadownloader/icon.png')
+        self.pluginIcon = QIcon(":/plugins/ibgedatadownloader/icon.png")
         self.unzip = listUnzipOptions[1] if listUnzipOptions[0] else False
         self.exception = []
 
@@ -53,7 +57,7 @@ class WorkerDownloadManager(QgsTask):
 
         u = urllib.request.urlopen(url)
         meta = u.headers
-        fileSize = int(meta.get('Content-Length'))
+        fileSize = int(meta.get("Content-Length"))
         return fileSize
 
     def finished(self, result):
@@ -61,11 +65,18 @@ class WorkerDownloadManager(QgsTask):
         called from the main thread so it is safe to interact with the GUI etc here"""
 
         if result is False:
-            self.msgBar.pushMessage(self.tr(u'Error'), self.tr(u'Oops, something went wrong! Please, contact the developer by e-mail.'), Qgis.Critical, duration=0)
+            self.msgBar.pushMessage(
+                self.tr("Error"),
+                self.tr("Oops, something went wrong! Please, contact the developer by e-mail."),
+                Qgis.Critical,
+                duration=0,
+            )
         elif self.exception != []:
-            self.msgBar.pushMessage(self.tr(u'Warning'), self.tr(u'Process partially completed.'), Qgis.Warning, duration=0)
+            self.msgBar.pushMessage(
+                self.tr("Warning"), self.tr("Process partially completed."), Qgis.Warning, duration=0
+            )
         else:
-            self.msgBar.pushMessage(self.tr(u'Success'), self.tr(u'Process completed.'), Qgis.Success, duration=0)
+            self.msgBar.pushMessage(self.tr("Success"), self.tr("Process completed."), Qgis.Success, duration=0)
 
     def run(self):
         """Principal method that is automatically called when the task runs."""
@@ -83,8 +94,8 @@ class WorkerDownloadManager(QgsTask):
             try:
                 u = urllib.request.urlopen(url)
             except Exception as e:
-                msg = self.tr(u'Failed to open url {}.').format(url)
-                #return False
+                msg = self.tr("Failed to open url {}.").format(url)
+                # return False
                 self.exception.append(n, url, msg, e)
                 fails += 1
                 continue
@@ -94,16 +105,24 @@ class WorkerDownloadManager(QgsTask):
                 os.makedirs(self.dirPad)
 
             # Downloading file
-            f = open(outFile, 'wb')
-            msg = self.tr('{n}/{total} - Downloading {file}...').format(n=n + 1, total=self.totalUrls, file=fileName)
+            f = open(outFile, "wb")
+            msg = self.tr("{n}/{total} - Downloading {file}...").format(n=n + 1, total=self.totalUrls, file=fileName)
             self.textProgress.emit(msg)
-            #print "Downloading: %s Bytes: %s" % (outFile, file_size)
+            # print "Downloading: %s Bytes: %s" % (outFile, file_size)
             file_size_dl = 0
             block_sz = 8192
             while True:
                 # Check if task was canceled by the user
                 if self.isCanceled():
-                    self.processResult.emit([self.tr(u'The process was canceled by the user.'), Qgis.Critical, self.exception, url, 'download'])
+                    self.processResult.emit(
+                        [
+                            self.tr("The process was canceled by the user."),
+                            Qgis.Critical,
+                            self.exception,
+                            url,
+                            "download",
+                        ]
+                    )
                     return True
 
                 buffer = u.read(block_sz)
@@ -112,23 +131,35 @@ class WorkerDownloadManager(QgsTask):
                 file_size_dl += len(buffer)
                 f.write(buffer)
                 self.setProgress(file_size_dl * 100 / fileSize)
-                #status = r"%10d  [%3.2f%%]" % (file_size_dl, file_size_dl * 100. / file_size)
-                #status = status + chr(8)*(len(status)+1)
-                #print status,
+                # status = r"%10d  [%3.2f%%]" % (file_size_dl, file_size_dl * 100. / file_size)
+                # status = status + chr(8)*(len(status)+1)
+                # print status,
             f.close()
 
             # Extracting downloaded files
-            if self.unzip and any(fileName.endswith(ext) for ext in ('.zip', '.tar')):
-                msg = self.tr(u'{n}/{total} - Extracting files from {file}...').format(n=n + 1, total=self.totalUrls, file=fileName)
+            if self.unzip and any(fileName.endswith(ext) for ext in (".zip", ".tar")):
+                msg = self.tr("{n}/{total} - Extracting files from {file}...").format(
+                    n=n + 1, total=self.totalUrls, file=fileName
+                )
                 self.textProgress.emit(msg)
-                if fileName.endswith('zip'):
+                if fileName.endswith("zip"):
                     # Extract zip file
-                    with zipfile.ZipFile(os.path.join(self.dirPad, fileName), 'r') as zip_ref:
+                    with zipfile.ZipFile(os.path.join(self.dirPad, fileName), "r") as zip_ref:
                         zip_ref.extractall(self.dirPad)
                 else:
                     # Extract tar file
-                    with tarfile.open(os.path.join(self.dirPad, fileName), 'r') as tar_ref:
+                    with tarfile.open(os.path.join(self.dirPad, fileName), "r") as tar_ref:
                         tar_ref.extractall(self.dirPad)
 
-        self.processResult.emit([self.tr(u'Process completed with {fails} fails. Check your file(s) at <a href="{saida}">{saida}</a>.').format(fails=fails, saida=self.dirPad), Qgis.Success, self.exception, self.listUrls, 'download'])
+        self.processResult.emit(
+            [
+                self.tr(
+                    'Process completed with {fails} fails. Check your file(s) at <a href="{saida}">{saida}</a>.'
+                ).format(fails=fails, saida=self.dirPad),
+                Qgis.Success,
+                self.exception,
+                self.listUrls,
+                "download",
+            ]
+        )
         return True

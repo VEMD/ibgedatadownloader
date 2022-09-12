@@ -16,13 +16,14 @@
  *                                                                         *
  ***************************************************************************/
 """
-from qgis.PyQt.QtCore import QSettings
-from qgis.PyQt.QtWidgets import QDialog, QTextBrowser, QGridLayout
 import os
+
+from qgis.PyQt.QtCore import QSettings
+from qgis.PyQt.QtWidgets import QDialog, QGridLayout, QTextBrowser
 
 
 class HelpDialog(QDialog):
-    """CREATES AND PREPARE THE HELP DIALOG"""
+    """Creates and prepares the Help Dialog"""
 
     def __init__(self, parent):
         """Constructor."""
@@ -34,15 +35,15 @@ class HelpDialog(QDialog):
         self.fileDir = os.path.dirname(__file__)
 
         # Keep reference of the sotfware language
-        self.locale = QSettings().value('locale/userLocale')[0:2]
+        self.locale = QSettings().value("locale/userLocale")[0:2]
 
         # Configuring window
-        self.setWindowTitle(self.tr('Help of IBGE Data Downloader'))
+        self.setWindowTitle(self.tr("Help of IBGE Data Downloader"))
         self.resize(600, 500)
 
         # Create grid to organize objects
         grid = QGridLayout(self)
-        grid.setObjectName('mainGridLayout')
+        grid.setObjectName("mainGridLayout")
 
         # Create the browser
         self.helpBrowser = QTextBrowser()
@@ -54,13 +55,13 @@ class HelpDialog(QDialog):
         grid.addWidget(self.helpBrowser)
 
         # Load corresponding file
-        htmlPage = open(os.path.join(self.fileDir, 'pluginHelp', self.locale, 'home.html'))
+        htmlPage = open(os.path.join(self.fileDir, "pluginHelp", self.locale, "home.html"))
         self.helpBrowser.setHtml(htmlPage.read())
         htmlPage.close()
 
     def helpBrowserAnchorClicked(self, link):
         """Change page of help dialog when an anchor is clicked"""
 
-        htmlPage = open(os.path.join(self.fileDir, 'pluginHelp', self.locale, link.toString()))
+        htmlPage = open(os.path.join(self.fileDir, "pluginHelp", self.locale, link.toString()))
         self.helpBrowser.setHtml(htmlPage.read())
         htmlPage.close()
