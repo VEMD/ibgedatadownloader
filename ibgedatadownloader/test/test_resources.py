@@ -1,4 +1,3 @@
-# coding=utf-8
 """Resources test.
 
 .. note:: This program is free software; you can redistribute it and/or modify
@@ -8,14 +7,13 @@
 
 """
 
-__author__ = 'vinicius_etchebeur@hotmail.com'
-__date__ = '2021-11-17'
-__copyright__ = 'Copyright 2021,  '
+__author__ = "vinicius_etchebeur@hotmail.com"
+__date__ = "2021-11-17"
+__copyright__ = "Copyright 2021,  "
 
 import unittest
 
 from qgis.PyQt.QtGui import QIcon
-
 
 
 class IbgeDataDownloaderDialogTest(unittest.TestCase):
@@ -31,14 +29,12 @@ class IbgeDataDownloaderDialogTest(unittest.TestCase):
 
     def test_icon_png(self):
         """Test we can click OK."""
-        path = ':/plugins/IbgeDataDownloader/icon.png'
+        path = ":/plugins/IbgeDataDownloader/icon.png"
         icon = QIcon(path)
         self.assertFalse(icon.isNull())
+
 
 if __name__ == "__main__":
     suite = unittest.makeSuite(IbgeDataDownloaderResourcesTest)
     runner = unittest.TextTestRunner(verbosity=2)
     runner.run(suite)
-
-
-
