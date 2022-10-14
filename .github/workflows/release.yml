@@ -33,10 +33,10 @@ jobs:
         python -m pip install -U pip setuptools wheel
         python -m pip install -U -r requirements/packaging.txt
 
-    - name: Compile selected files to bytecode and stage them
-      run: |
-        python -OO -m compileall -b -i .compile
-        git add --force ./\*.pyc
+    #- name: Compile selected files to bytecode and stage them
+    #  run: |
+    #    python -OO -m compileall -b -i .compile
+    #    git add --force ./\*.pyc
 
     - name : Get current changelog for ${GITHUB_REF/refs\/tags\//}
       run: qgis-plugin-ci changelog ${GITHUB_REF/refs\/tags\//} >> release.md
