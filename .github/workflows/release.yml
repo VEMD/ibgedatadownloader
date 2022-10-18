@@ -5,7 +5,7 @@ on:
     tags: "*"
 
 env:
-  PYTHON_VERSION: 3.7
+  PYTHON_VERSION: 3.9
 
 
 jobs:

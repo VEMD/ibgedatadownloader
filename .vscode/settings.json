@@ -21,6 +21,7 @@
   ],
 
   "python.languageServer": "Pylance",
+  // "python.languageServer": "Jedi",
 
   // Wait.. this isn't a python interpreter..
   "python.defaultInterpreterPath": "C:/Program Files/QGIS 3.26.2/bin/python-qgis.bat",
