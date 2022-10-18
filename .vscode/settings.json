@@ -23,7 +23,7 @@
   "python.languageServer": "Pylance",
 
   // Wait.. this isn't a python interpreter..
-  "python.defaultInterpreterPath": "C:/Program Files/QGIS 3.16/bin/python-qgis-ltr.bat",
+  "python.defaultInterpreterPath": "C:/Program Files/QGIS 3.26.2/bin/python-qgis.bat",
 
   // Linter
   "python.linting.enabled": true,
@@ -47,43 +47,43 @@
   "python.testing.pytestEnabled": true,
 
   // PyQt Integration
-  "qtForPython.designer.path": "C:\\Program Files\\QGIS 3.16\\bin\\qgis-ltr-designer.bat",
+  "qtForPython.designer.path": "C:\\Program Files\\QGIS 3.26.2\\bin\\qgis-designer.bat",
 
   // Replicate the QGIS environment on the terminal
   "terminal.integrated.env.windows": {
     // Path
-    "PATH": "${env:ProgramFiles}\\QGIS 3.16\\apps\\qgis-ltr\\bin;${env:ProgramFiles}\\QGIS 3.16\\apps\\grass\\grass78\\lib;${env:ProgramFiles}\\QGIS 3.16\\apps\\grass\\grass78\\bin;${env:ProgramFiles}\\QGIS 3.16\\apps\\Python37;${env:ProgramFiles}\\QGIS 3.16\\apps\\Python37\\Scripts;${env:ProgramFiles}\\QGIS 3.16\\apps\\qt5\\bin;${env:ProgramFiles}\\QGIS 3.16\\bin;${env:Path}",
+    "PATH": "${env:ProgramFiles}\\QGIS 3.26.2\\apps\\qgis\\bin;${env:ProgramFiles}\\QGIS 3.26.2\\apps\\grass\\grass78\\lib;${env:ProgramFiles}\\QGIS 3.26.2\\apps\\grass\\grass78\\bin;${env:ProgramFiles}\\QGIS 3.26.2\\apps\\Python39;${env:ProgramFiles}\\QGIS 3.26.2\\apps\\Python39\\Scripts;${env:ProgramFiles}\\QGIS 3.26.2\\apps\\qt5\\bin;${env:ProgramFiles}\\QGIS 3.26.2\\bin;${env:Path}",
     // Python
-    "PYTHONPATH": "${env:ProgramFiles}\\QGIS 3.16\\apps\\qgis-ltr\\python;${env:PYTHONPATH}",
+    "PYTHONPATH": "${env:ProgramFiles}\\QGIS 3.26.2\\apps\\qgis\\python;${env:PYTHONPATH}",
     // GDAL
-    "GDAL_DATA": "${env:ProgramFiles}\\QGIS 3.16\\share\\gdal",
-    "GDAL_DRIVER_PATH": "${env:ProgramFiles}\\QGIS 3.16\\bin\\gdalplugins",
+    "GDAL_DATA": "${env:ProgramFiles}\\QGIS 3.26.2\\share\\gdal",
+    "GDAL_DRIVER_PATH": "${env:ProgramFiles}\\QGIS 3.26.2\\bin\\gdalplugins",
     "GDAL_FILENAME_IS_UTF8": "YES",
     // GeoTIFF
-    "GEOTIFF_CSV": "${env:ProgramFiles}\\QGIS 3.16\\share\\epsg_csv",
+    "GEOTIFF_CSV": "${env:ProgramFiles}\\QGIS 3.26.2\\share\\epsg_csv",
     // GRASS
-    "GISBASE": "${env:ProgramFiles}\\QGIS 3.16\\apps\\grass\\grass78",
-    "GRASS_PROJSHARE": "${env:ProgramFiles}\\QGIS 3.16\\share\\proj",
-    "GRASS_PYTHON": "${env:ProgramFiles}\\QGIS 3.16\\bin\\python3.exe",
+    "GISBASE": "${env:ProgramFiles}\\QGIS 3.26.2\\apps\\grass\\grass78",
+    "GRASS_PROJSHARE": "${env:ProgramFiles}\\QGIS 3.26.2\\share\\proj",
+    "GRASS_PYTHON": "${env:ProgramFiles}\\QGIS 3.26.2\\bin\\python3.exe",
     // JPEG
     "JPEGMEM": "1000000",
     // Qt
-    "O4W_QT_PREFIX": "${env:ProgramFiles}\\QGIS 3.16\\apps\\Qt5",
-    "O4W_QT_BINARIES": "${env:ProgramFiles}\\QGIS 3.16\\apps\\Qt5\\bin",
-    "O4W_QT_HEADERS": "${env:ProgramFiles}\\QGIS 3.16\\apps\\Qt5\\include",
-    "O4W_QT_LIBRARIES": "${env:ProgramFiles}\\QGIS 3.16\\apps\\Qt5\\lib",
-    "O4W_QT_PLUGINS": "${env:ProgramFiles}\\QGIS 3.16\\apps\\Qt5\\plugins",
-    "O4W_QT_TRANSLATIONS": "${env:ProgramFiles}\\QGIS 3.16\\apps\\Qt5\\translations",
-    "QT_PLUGIN_PATH": "${env:ProgramFiles}\\QGIS 3.16\\apps\\qgis-ltr\\qtplugins;${env:ProgramFiles}\\QGIS 3.16\\apps\\qt5\\plugins",
+    "O4W_QT_PREFIX": "${env:ProgramFiles}\\QGIS 3.26.2\\apps\\qt5",
+    "O4W_QT_BINARIES": "${env:ProgramFiles}\\QGIS 3.26.2\\apps\\qt5\\bin",
+    "O4W_QT_HEADERS": "${env:ProgramFiles}\\QGIS 3.26.2\\apps\\qt5\\include",
+    "O4W_QT_LIBRARIES": "${env:ProgramFiles}\\QGIS 3.26.2\\apps\\qt5\\lib",
+    "O4W_QT_PLUGINS": "${env:ProgramFiles}\\QGIS 3.26.2\\apps\\qt5\\plugins",
+    "O4W_QT_TRANSLATIONS": "${env:ProgramFiles}\\QGIS 3.26.2\\apps\\qt5\\translations",
+    "QT_PLUGIN_PATH": "${env:ProgramFiles}\\QGIS 3.26.2\\apps\\qgis\\qtplugins;${env:ProgramFiles}\\QGIS 3.26.2\\apps\\qt5\\plugins",
     // Proj
-    "PROJ_LIB": "${env:ProgramFiles}\\QGIS 3.16\\share\\proj",
+    "PROJ_LIB": "${env:ProgramFiles}\\QGIS 3.26.2\\share\\proj",
     // PEP 540
     "PYTHONUTF8": "1",
     // QGIS
-    "QGIS_PREFIX_PATH": "${env:ProgramFiles}\\QGIS 3.16\\apps\\qgis-ltr",
+    "QGIS_PREFIX_PATH": "${env:ProgramFiles}\\QGIS 3.26.2\\apps\\qgis",
     // SSL
-    "SSL_CERT_DIR": "${env:ProgramFiles}\\QGIS 3.16\\apps\\openssl\\certs",
-    "SSL_CERT_FILE": "${env:ProgramFiles}\\QGIS 3.16\\bin\\curl-ca-bundle.crt",
+    "SSL_CERT_DIR": "${env:ProgramFiles}\\QGIS 3.26.2\\apps\\openssl\\certs",
+    "SSL_CERT_FILE": "${env:ProgramFiles}\\QGIS 3.26.2\\bin\\curl-ca-bundle.crt",
     // Cache
     "VSI_CACHE": "TRUE",
     "VSI_CACHE_SIZE": "1000000"

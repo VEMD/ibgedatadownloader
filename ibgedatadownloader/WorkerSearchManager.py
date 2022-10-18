@@ -42,7 +42,7 @@ class WorkerSearchManager(QgsTask):
         """Constructor."""
 
         # Mother class constructor QgsTask (subclass)
-        super(WorkerSearchManager, self).__init__(desc, flags=QgsTask.CanCancel)
+        super().__init__(desc, flags=QgsTask.CanCancel)
 
         # Saving references
         self.iface = iface
