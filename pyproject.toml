@@ -3,7 +3,7 @@ requires = ["setuptools>=65.3"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "ibge_edicao_camadas"
+name = "ibgedatadownloader"
 readme = "README.md"
 requires-python = ">=3.7"
 dependencies = ["requests~=2.23"]
@@ -46,13 +46,13 @@ pack = [
 ]
 
 [project.urls]
-Repository = "https://github.com/prjQGIS/ibge_edicao_camadas"
+Repository = "https://github.com/VEMD/ibgedatadownloader"
 
 [tool.setuptools.dynamic]
-version = {attr = "ibge_edicao_camadas.__about__.__version__"}
+version = {attr = "ibgedatadownloader.__about__.__version__"}
 
 [tool.setuptools.packages.find]
-include = ["ibge_edicao_camadas*"]
+include = ["ibgedatadownloader*"]
 
 [tool.bandit]
 skips = [

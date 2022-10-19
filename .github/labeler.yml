@@ -1,5 +1,2 @@
-ibge_aadmin:
-  - '\[ibge_aadmin\]'
-
-ibge_edicao_camadas:
-  - '\[ibge_edicao_camadas\]'
+ibgedatadownloader:
+  - '\[ibgedatadownloader\]'
