@@ -49,7 +49,7 @@ repos:
         entry: python ./scripts/atualiza_metadata.py
         language: python
         files: CHANGELOG.md
-        additional_dependencies: ["qgis-plugin-ci==2.3"]
+        additional_dependencies: ["qgis-plugin-ci~=2.3"]
 
 ci:
     autoupdate_schedule: quarterly

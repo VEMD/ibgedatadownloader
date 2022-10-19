@@ -1,2 +1,3 @@
 # Adicionar arquivos para, por exemplo, ignorar:
-# nome_arqruivo.py export-ignore
+teste_construcaoDOM.py export-ignore
+resources.bat export-ignore

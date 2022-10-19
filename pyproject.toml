@@ -42,7 +42,7 @@ dev = [
   "types-requests~=2.23"
 ]
 pack = [
-  "qgis-plugin-ci==2.3"
+  "qgis-plugin-ci~=2.3"
 ]
 
 [project.urls]
